@@ -2,8 +2,14 @@
   "meta": {
     "name": "真心话",
     "modes": {
-      "kindergarten": { "label": "幼儿园", "emoji": "🚌" },
-      "highway": { "label": "上高速", "emoji": "🛣️" }
+      "kindergarten": {
+        "label": "幼儿园",
+        "emoji": "🚌"
+      },
+      "highway": {
+        "label": "上高速",
+        "emoji": "🛣️"
+      }
     }
   },
   "cards": {
@@ -43,6 +49,12 @@
       {
         "id": "tr_k_009",
         "question": "这个月/今年有没有亲过嘴，和谁？"
+      },
+      {
+        "id": "tr_k_010",
+        "question": "精神出轨和肉体出轨你更不能接受哪一个？",
+        "author": "Kayla",
+        "submittedAt": "2026-04-19T18:46:07.524Z"
       }
     ],
     "highway": [
