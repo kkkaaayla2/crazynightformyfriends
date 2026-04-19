@@ -86,6 +86,15 @@
   /* SE 11 → iPhone 16 Pro 13 → Pro Max 14 */
   --stamp-fs: clamp(10px, 1vh + 4.5px, 14px);
 
+  /* 真心话 / 大冒险 / 抓手指：模式条或与之对齐的统一顶距（抓手指无模式条，用同值与后两者垂直对齐） */
+  --card-stage-top-offset: clamp(114px, 10.5dvh + 58px, 154px);
+  /* 玩点别的：无模式条，顶距小于上一项，避免贴标题行，并与「换一张」侧留白大致对称；不压掉过多可阅读高度 */
+  --card-stage-top-offset-other: clamp(56px, 7dvh + 32px, 100px);
+  /* 玩点别的 kraft：在 stage 内 max-height 再收一截，卡片略短、上下更匀 */
+  --other-games-ticket-h-inset: clamp(18px, 3.5dvh, 34px);
+  /* 玩点别的：可滚动时底部渐变蒙层高度（末行半隐提示） */
+  --kraft-scroll-fade-h: clamp(36px, 9dvh, 52px);
+
   /* 动画 */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -557,6 +566,8 @@ button {
   align-items: center;
   justify-content: center;
   perspective: 1200px;
+  /* 默认顶距 0；各 tab 在下方覆盖 */
+  padding-top: 0;
   /* 底部为 shuffle-btn 预留 ~72px：
      shuffle-btn 高 ~46px + 视觉缓冲 ~26px，
      无论卡片如何放大，都不会撞上换一张按钮。 */
@@ -566,14 +577,20 @@ button {
   min-height: clamp(380px, 58dvh, 580px);
 }
 
-/* 凡是有 mode-switcher（absolute 浮在顶部）的 pane，
-   card-stage 必须再为 mode-switcher 显式预留头部空间，
-   避免卡片放大后撞上去。
-   mode-switcher 从 pane 顶起 28px、自身约 50px → 终点约 78px。
-   预留 86px 头部给 8px 余量。 */
+/* 真心话 / 大冒险：模式条占顶；抓手指：无模式条但与上两者同一顶距，切换 tab 时卡片垂直对齐 */
 .tab-pane[data-pane="truth"] .card-stage,
-.tab-pane[data-pane="dare"] .card-stage {
-  padding-top: 86px;
+.tab-pane[data-pane="dare"] .card-stage,
+.tab-pane[data-pane="grab-finger"] .card-stage {
+  padding-top: var(--card-stage-top-offset);
+}
+
+/* 玩点别的：略短的顶距 + 票根 max-height 再收紧，减轻贴顶、与底部按钮区更对称 */
+.tab-pane[data-pane="other-games"] .card-stage {
+  padding-top: var(--card-stage-top-offset-other);
+}
+
+.tab-pane[data-pane="other-games"] .ticket.is-kraft {
+  max-height: calc(100% - var(--other-games-ticket-h-inset));
 }
 
 /* ---------- 8. 票根卡片：核心视觉 ---------- */
@@ -687,6 +704,45 @@ button {
 }
 .ticket-body.is-scrollable::-webkit-scrollbar-thumb:hover {
   background: rgba(60, 30, 10, 0.75);
+}
+
+/* 玩点别的（kraft）：有纵向滚动且未滑到底时，底部 mask 渐变 —— 末行只显上半、下半渐隐，提示可下滑。
+   滑到底后由 JS 加 .is-scroll-end，mask 撤掉。 */
+.ticket.is-kraft .ticket-body.is-scrollable:not(.is-scroll-end) {
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0,
+    #000 calc(100% - var(--kraft-scroll-fade-h)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0,
+    #000 calc(100% - var(--kraft-scroll-fade-h)),
+    transparent 100%
+  );
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticket.is-kraft .ticket-body.is-scrollable:not(.is-scroll-end) {
+    /* 减弱动效偏好下仍保留提示，仅略缩短渐变区 */
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      #000 0,
+      #000 calc(100% - min(var(--kraft-scroll-fade-h), 28px)),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      #000 0,
+      #000 calc(100% - min(var(--kraft-scroll-fade-h), 28px)),
+      transparent 100%
+    );
+  }
 }
 
 .ticket-eyebrow {
@@ -1121,48 +1177,7 @@ button {
   outline-offset: 3px;
 }
 
-/* ---------- 11.5 滑动手势引导：卡片首次 peek 动画 ----------
-   反思：弹胶囊 + 手指图标 = 典型的"AI 自动加 onboarding"，
-   既挡视线又显得不自信。
-   新方案：让卡片本身做一次"被左滑"的小动作，
-     —— 比任何文字提示都直观地告诉用户"这玩意儿能左右滑"。
-   触发：每个 session 仅 1 次，进入页面 1.4s 后开始（让用户先看完卡片），
-        约 1.1s 完成动画；若用户提前做出任何手势/点击 → 立刻 dismiss 并标记。 */
-.ticket.first-visit-peek {
-  /* 通过 CSS 自定义动画名属性在 cream 卡 / kraft 卡之间切换原始旋转角 */
-  animation: ticket-peek 1100ms cubic-bezier(0.32, 0.72, 0.32, 1) both;
-}
-.ticket.is-kraft.first-visit-peek {
-  animation: ticket-peek-kraft 1100ms cubic-bezier(0.32, 0.72, 0.32, 1) both;
-}
-
-/* cream 票根原始 rotate(-1.2deg)：peek 时往左挪 28px，
-   稍稍多倾斜一点模拟"被手指拨动"，再回弹 */
-@keyframes ticket-peek {
-  0%   { transform: rotate(-1.2deg) translateX(0); }
-  35%  { transform: rotate(-2.4deg) translateX(-28px); }
-  55%  { transform: rotate(-2.4deg) translateX(-28px); }
-  80%  { transform: rotate(-0.4deg) translateX(6px); }
-  100% { transform: rotate(-1.2deg) translateX(0); }
-}
-
-/* kraft 票根原始 rotate(-0.6deg) */
-@keyframes ticket-peek-kraft {
-  0%   { transform: rotate(-0.6deg) translateX(0); }
-  35%  { transform: rotate(-1.6deg) translateX(-28px); }
-  55%  { transform: rotate(-1.6deg) translateX(-28px); }
-  80%  { transform: rotate(0.2deg) translateX(6px); }
-  100% { transform: rotate(-0.6deg) translateX(0); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ticket.first-visit-peek,
-  .ticket.is-kraft.first-visit-peek {
-    animation: none;
-  }
-}
-
-/* ---------- 11.6 持续 affordance：低存在感的"可滑动"暗示 ----------
+/* ---------- 11.5 持续 affordance：低存在感的"可滑动"暗示 ----------
    位置：浮在 shuffle-btn 正上方约 14px。
    设计语言：mono 等宽 + 淡 amber + 横线装饰，与品牌排版一致；
    存在感非常低（默认 opacity 0.45），不抢戏；
@@ -1319,6 +1334,12 @@ button {
 
 /* ---------- 14. 小屏适配 ---------- */
 @media (max-height: 700px) {
+  :root {
+    --card-stage-top-offset: clamp(98px, 9dvh + 46px, 128px);
+    --card-stage-top-offset-other: clamp(44px, 6dvh + 24px, 80px);
+    --other-games-ticket-h-inset: clamp(14px, 3dvh, 26px);
+    --kraft-scroll-fade-h: clamp(28px, 7dvh, 40px);
+  }
   .ticket {
     /* 小屏同样为 stub 区域留 padding-bottom，公式同主版 */
     padding: 22px 22px calc(var(--stamp-size) + 24px);

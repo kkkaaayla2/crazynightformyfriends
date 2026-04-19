@@ -304,11 +304,41 @@
    * 用户原话："只在文字部分无法一屏展示时，才给出滚条"
    * 默认 .ticket-body 的滚动条样式被 CSS 隐藏；
    * 只有真正 scrollHeight > clientHeight 时，才加 .is-scrollable 把滚条显出来。 */
+  const SCROLL_END_EPS = 10;
+
+  function syncKraftScrollEnd(body) {
+    if (!body || !body.isConnected) return;
+    if (!body.classList.contains('is-scrollable')) {
+      body.classList.remove('is-scroll-end');
+      return;
+    }
+    const ticket = body.closest('.ticket');
+    if (!ticket || !ticket.classList.contains('is-kraft')) return;
+    const atEnd = body.scrollTop + body.clientHeight >= body.scrollHeight - SCROLL_END_EPS;
+    body.classList.toggle('is-scroll-end', atEnd);
+  }
+
+  function ensureKraftScrollFadeListener(body) {
+    if (!body || body.dataset.kraftFadeBound === '1') return;
+    const ticket = body.closest('.ticket');
+    if (!ticket || !ticket.classList.contains('is-kraft')) return;
+    body.dataset.kraftFadeBound = '1';
+    body.addEventListener('scroll', () => syncKraftScrollEnd(body), { passive: true });
+  }
+
   function updateScrollableState(body) {
     if (!body || !body.isConnected) return;
     // 2px 容差，避免 subpixel 渲染误判
     const overflows = body.scrollHeight - body.clientHeight > 2;
     body.classList.toggle('is-scrollable', overflows);
+    if (!overflows) {
+      body.classList.remove('is-scroll-end');
+    } else if (body.closest('.ticket.is-kraft')) {
+      ensureKraftScrollFadeListener(body);
+      requestAnimationFrame(() => syncKraftScrollEnd(body));
+    } else {
+      body.classList.remove('is-scroll-end');
+    }
   }
 
   function recheckAllBodies() {
@@ -439,7 +469,6 @@
     $$('.shuffle-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const stageKey = btn.dataset.shuffle;
-        dismissSwipeHint();
         markSwiped();
         renderStage(stageKey, { animateOut: true });
       });
@@ -451,61 +480,10 @@
         const ticket = e.target.closest('.ticket');
         if (!ticket) return;
         if (ticket.classList.contains('leave')) return;
-        dismissSwipeHint();
         markSwiped();
         renderStage(stageKey, { animateOut: true });
       });
     });
-  }
-
-  /* ---------- 滑动手势引导：卡片首次 peek 动画 ----------
-   * 反思旧方案：弹一个手指图标的胶囊提示是典型的 "AI 自动加 onboarding"，
-   *   ① 挡视线 ② 与设计语言（牛皮纸票根 + amber）格格不入 ③ 显得不自信
-   * 新方案：进入页面 1.4s 后，让卡片本身做一次"被左滑"的小动作
-   *   —— 比任何文字提示都直观地告诉"这玩意儿能左右滑"
-   * 触发条件：每个 session 仅 1 次；用户提前做出任何手势/点击即取消并标记。 */
-  const HINT_KEY = 'cn_swipe_hint_seen';
-  const PEEK_DELAY = 1400;  // 让 enter 动画走完（520ms）+ 留出阅读时间
-  const PEEK_DURATION = 1100; // 与 CSS 动画时长保持一致
-  let peekTriggerTimer = null;
-  let peekTicketEl = null;
-
-  function showSwipeHintIfNeeded() {
-    try {
-      if (sessionStorage.getItem(HINT_KEY)) return;
-    } catch (_) { /* 隐私模式可能抛错，忽略 */ }
-
-    // 初次渲染后 ticket 在 DOM 里要再等一下 enter 动画
-    peekTriggerTimer = setTimeout(() => {
-      const stage = document.querySelector('.tab-pane.is-active .card-stage');
-      const ticket = stage && stage.querySelector('.ticket');
-      if (!ticket) return;
-
-      peekTicketEl = ticket;
-      ticket.classList.add('first-visit-peek');
-
-      // 动画结束后清理 class，并标记已看过
-      const cleanup = () => {
-        ticket.classList.remove('first-visit-peek');
-        peekTicketEl = null;
-        try { sessionStorage.setItem(HINT_KEY, '1'); } catch (_) {}
-      };
-      ticket.addEventListener('animationend', cleanup, { once: true });
-      // 兜底：万一 animationend 没触发，超时清理
-      setTimeout(cleanup, PEEK_DURATION + 200);
-    }, PEEK_DELAY);
-  }
-
-  function dismissSwipeHint() {
-    if (peekTriggerTimer) {
-      clearTimeout(peekTriggerTimer);
-      peekTriggerTimer = null;
-    }
-    if (peekTicketEl) {
-      peekTicketEl.classList.remove('first-visit-peek');
-      peekTicketEl = null;
-    }
-    try { sessionStorage.setItem(HINT_KEY, '1'); } catch (_) {}
   }
 
   /* 用户做出第一次有效手势后，把页面级 affordance 永久淡出。
@@ -573,7 +551,6 @@
         const dx = t.clientX - startX;
         const dy = t.clientY - startY;
         if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) >= Math.abs(dy)) {
-          dismissSwipeHint();
           markSwiped();
           renderStage(stageKey, { animateOut: true });
         }
@@ -711,9 +688,6 @@
     } else {
       renderStage('grab-finger');
     }
-
-    // 显示首次访问的滑动手势引导
-    showSwipeHintIfNeeded();
 
     // viewport 变化（旋屏 / 软键盘）后重新检测每张卡片的溢出
     window.addEventListener('resize', recheckAllBodies);
