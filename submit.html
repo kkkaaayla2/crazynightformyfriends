@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#1A0E14" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>加一张卡</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    @font-face {
+      font-family: 'Smiley Sans';
+      font-style: oblique 3.5deg;
+      font-weight: 400 900;
+      font-display: swap;
+      src: url('https://cdn.jsdelivr.net/gh/atelier-anchor/smiley-sans@latest/dist/SmileySans-Oblique.woff2') format('woff2');
+    }
+  </style>
+
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./submit.css" />
+</head>
+
+<body>
+  <div class="bg-layer" aria-hidden="true">
+    <div class="bg-gradient"></div>
+    <div class="bg-noise"></div>
+    <div class="bg-vignette"></div>
+  </div>
+
+  <div id="submitApp" class="submit-app">
+
+    <header class="submit-header">
+      <a class="back-btn" href="./index.html" aria-label="返回">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </a>
+      <div class="submit-title">
+        <span class="submit-title-cn">加一张卡</span>
+      </div>
+      <div class="submit-header-spacer"></div>
+    </header>
+
+    <main class="submit-main">
+      <form id="submitForm" class="submit-form" novalidate>
+
+        <!-- 分类选择 -->
+        <section class="form-section">
+          <label class="form-label">加到哪一类</label>
+          <div class="category-grid" role="radiogroup" aria-label="选择分类">
+            <button type="button" class="category-chip is-active" data-category="grab-finger">
+              <span class="chip-cn">抓手指</span>
+            </button>
+            <button type="button" class="category-chip" data-category="truth-kindergarten">
+              <span class="chip-cn">真心话 · 幼儿园</span>
+            </button>
+            <button type="button" class="category-chip" data-category="truth-highway">
+              <span class="chip-cn">真心话 · 上高速</span>
+            </button>
+            <button type="button" class="category-chip" data-category="dare-kindergarten">
+              <span class="chip-cn">大冒险 · 幼儿园</span>
+            </button>
+            <button type="button" class="category-chip" data-category="dare-highway">
+              <span class="chip-cn">大冒险 · 上高速</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- 卡片内容 -->
+        <section class="form-section">
+          <label class="form-label" for="contentInput">卡片内容</label>
+          <div class="textarea-wrap">
+            <textarea
+              id="contentInput"
+              class="form-textarea"
+              maxlength="60"
+              rows="4"
+              placeholder="感谢你对酒桌的贡献"
+              required
+            ></textarea>
+            <div class="char-counter" id="charCounter">
+              <span id="charCount">0</span> / 50
+            </div>
+          </div>
+          <p class="form-hint">字数上限 50 字。超过会自动标红，无法提交。</p>
+        </section>
+
+        <!-- 昵称 -->
+        <section class="form-section">
+          <label class="form-label" for="authorInput">你的昵称</label>
+          <input
+            id="authorInput"
+            class="form-input"
+            type="text"
+            maxlength="20"
+            placeholder="留个名，让 Kayla 知道是你"
+            required
+          />
+        </section>
+
+        <!-- 密钥 -->
+        <section class="form-section">
+          <label class="form-label" for="secretInput">密钥</label>
+          <input
+            id="secretInput"
+            class="form-input"
+            type="password"
+            placeholder="向 Kayla 索要，没有密钥无法提交哦"
+            autocomplete="off"
+            required
+          />
+        </section>
+
+        <!-- 提交状态 -->
+        <div class="form-status" id="formStatus" aria-live="polite"></div>
+
+        <!-- 提交按钮 -->
+        <button type="submit" class="submit-btn" id="submitBtn">
+          <span class="submit-btn-main">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14"></path>
+              <path d="M12 5l7 7-7 7"></path>
+            </svg>
+            <span class="submit-btn-label">去 提 交</span>
+          </span>
+          <span class="submit-btn-sub">提交后将立即加入题库，刷新页面生效</span>
+        </button>
+
+      </form>
+    </main>
+
+  </div>
+
+  <script src="./submit.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "crazy-night",
+  "version": "1.0.0",
+  "description": "疯狂星期X · 酒桌游戏 H5（Vercel Functions 投题后端）",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@octokit/rest": "^20.1.1"
+  }
+}

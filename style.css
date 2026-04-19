@@ -1,0 +1,1163 @@
+/* ============================================================
+ * 深夜局 · LATE NIGHT
+ * Midnight Carnival Ticket - Drinking Games H5
+ * ============================================================ */
+
+/* ---------- 0. CSS 变量：色彩 / 字体 / 尺寸 / 动画 ---------- */
+:root {
+  /* 背景 - 深酒褐 */
+  --bg-base: #1A0E14;
+  --bg-elev: #241319;
+  --bg-deep: #0F0709;
+
+  /* 票根 - 奶油色（幼儿园 / 默认 / 抓手指） */
+  --ticket-cream: #F4E4C1;
+  --ticket-cream-shade: #E8D4A8;
+  --ticket-cream-edge: #D4BB8A;
+
+  /* 票根 - 暗血红（上高速 / 真心话） */
+  --ticket-blood: #C73E3A;
+  --ticket-blood-shade: #A82A26;
+
+  /* 票根 - 火焰橘（上高速 / 大冒险） */
+  --ticket-fire: #D9572E;
+  --ticket-fire-shade: #B8401C;
+
+  /* 票根 - 牛皮纸（其他游戏） */
+  --ticket-kraft: #D9C19A;
+  --ticket-kraft-shade: #B89A6E;
+
+  /* 强调色 */
+  --accent-amber: #E8A33D;
+  --accent-amber-deep: #C8861E;
+  --accent-neon: #6FE3C4;
+  --accent-fire: #FF4D2E;
+
+  /* 墨水色（票面文字） */
+  --ink-dark: #1A0E14;
+  --ink-mid: #5A3E3E;
+  --ink-faded: rgba(26, 14, 20, 0.55);
+  --ink-light: #F4E4C1;
+  --ink-light-faded: rgba(244, 228, 193, 0.6);
+
+  /* 字体 */
+  --font-display-cn: 'Smiley Sans', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --font-body-cn: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --font-display-en: 'Fraunces', Georgia, serif;
+  --font-body-en: 'Space Grotesk', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* 尺寸 */
+  --header-h: 60px;
+  --tab-bar-h: 72px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* ---------- 响应式字号（基于屏高线性插值）----------
+     基准机型：
+       iPhone SE (667dvh) → 下限
+       iPhone 16 Pro (852dvh) → 中间点
+       iPhone 16 Pro Max (932dvh) → 上限
+     公式： clamp(min, a·vh + b, max) */
+
+  /* 票根主文字（抓手指/真心话/大冒险卡片内容，≤50字）
+     SE 24 → iPhone 16 Pro 32 → Pro Max 35 */
+  --fs-ticket-content: clamp(24px, 4.3vh - 4.7px, 36px);
+  /* 票根主文字兜底（>50字，长文本）
+     SE 20 → iPhone 16 Pro 26 → Pro Max 29 */
+  --fs-ticket-content-fallback: clamp(20px, 3.5vh - 3.4px, 30px);
+  /* 票根标签（GRAB · 抓手指 / TRUTH · 真心话 等 eyebrow）
+     SE 13 → iPhone 16 Pro 15 → Pro Max 16 */
+  --fs-ticket-title: clamp(12px, 1.05vh + 6px, 16px);
+  /* 玩点别的：游戏名称
+     SE 28 → iPhone 16 Pro 35 → Pro Max 38 */
+  --fs-game-name: clamp(26px, 3.7vh + 3.3px, 38px);
+  /* 玩点别的：游戏描述
+     SE 14 → iPhone 16 Pro 16.5 → Pro Max 17.5 */
+  --fs-game-desc: clamp(13px, 1.3vh + 5.3px, 18px);
+  /* 玩点别的：规则条目
+     SE 13 → iPhone 16 Pro 15 → Pro Max 16 */
+  --fs-game-rule: clamp(12.5px, 1.1vh + 5.6px, 16px);
+
+  /* ---------- 印章尺寸（与字号同节奏放大）----------
+     SE 56 → iPhone 16 Pro 68 → Pro Max 74 */
+  --stamp-size: clamp(56px, 7vh + 9px, 80px);
+  /* SE 11 → iPhone 16 Pro 13 → Pro Max 14 */
+  --stamp-fs: clamp(10px, 1vh + 4.5px, 14px);
+
+  /* 动画 */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --t-fast: 180ms;
+  --t-mid: 320ms;
+  --t-slow: 600ms;
+}
+
+/* ---------- 1. Reset / 基础 ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-base);
+  color: var(--ink-light);
+  font-family: var(--font-body-cn);
+  font-size: 16px;
+  line-height: 1.5;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+button {
+  border: none;
+  background: none;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* ---------- 2. 背景层：深酒红渐变 + SVG 噪点 + 暗角 ---------- */
+.bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bg-gradient {
+  position: absolute;
+  inset: -10%;
+  background:
+    radial-gradient(ellipse 70% 50% at 25% 15%, rgba(199, 62, 58, 0.30), transparent 60%),
+    radial-gradient(ellipse 80% 60% at 80% 90%, rgba(232, 163, 61, 0.18), transparent 60%),
+    radial-gradient(ellipse 60% 80% at 50% 50%, rgba(36, 19, 25, 0.6), transparent 70%),
+    linear-gradient(160deg, #2A1018 0%, #1A0E14 45%, #0F0709 100%);
+}
+
+.bg-noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.18;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+.bg-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.6) 100%);
+}
+
+/* ---------- 3. App 主布局 ---------- */
+.app {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  max-width: 480px;
+  margin: 0 auto;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+}
+
+/* ---------- 4. 顶部 Header ---------- */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-h);
+  padding: 0 18px;
+  position: relative;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  /* gap 14px：给 logo 的 amber 外发光（24px halo）留出呼吸空间，
+     避免霓虹光蹭到「疯狂星期一」文字 */
+  gap: 14px;
+}
+
+/* 「疯」Logo —— 单色霓虹招牌（夜店 Bar Sign 风）
+   --------------------------------------
+   反思：上一版用 amber 暖 × neon 青冷"对撞"是误解。
+     真实赛博朋克 / 夜店霓虹（银翼杀手、香港街景、东京 Bar）
+     大多是【单色霓虹 + 深紫黑底板】，靠同色系深浅 + 多层 blur
+     营造氛围光，而不是互补色对撞。
+   本版：纯 amber 系霓虹 + 深紫底板 + CRT 扫描线 + 故障闪烁 */
+.brand-mark {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  /* 深紫黑招牌底板 —— 给霓虹光足够的暗背景反衬 */
+  background:
+    radial-gradient(110% 70% at 50% 100%, rgba(232, 163, 61, 0.18) 0%, transparent 60%),
+    linear-gradient(160deg, #14080E 0%, #281020 55%, #0F060B 100%);
+  /* 比 amber 主色更亮一档 —— 霓虹灯管自身的"灯丝色" */
+  color: #FFC97A;
+  font-family: var(--font-display-cn);
+  font-weight: 900;
+  font-size: 22px;
+  border-radius: 6px;
+  /* 全 amber 单色光晕系统：
+     从近到远依次：内辉光 → 锐边 → 中等扩散 → 远距离漫散 */
+  box-shadow:
+    /* 内部 amber 亮边（霓虹灯管轮廓） */
+    inset 0 0 0 1px rgba(232, 163, 61, 0.55),
+    /* 内部 amber 辉光（管壁内反射） */
+    inset 0 0 12px rgba(232, 163, 61, 0.32),
+    /* 外部第一层：4px 紧密辉光 */
+    0 0 4px rgba(232, 163, 61, 0.7),
+    /* 外部第二层：12px 中距离扩散 */
+    0 0 12px rgba(232, 163, 61, 0.5),
+    /* 外部第三层：24px 远距离环境光 */
+    0 0 24px rgba(232, 163, 61, 0.28),
+    /* 地面阴影（让招牌"立"在 header 上） */
+    0 4px 14px rgba(0, 0, 0, 0.55);
+  /* 文字像霓虹灯管一样自发光（同色系 3 层 blur） */
+  text-shadow:
+    0 0 3px rgba(255, 220, 160, 1),
+    0 0 8px rgba(232, 163, 61, 0.85),
+    0 0 16px rgba(232, 163, 61, 0.5),
+    0 0 28px rgba(232, 163, 61, 0.3);
+  transform: rotate(-4deg);
+  isolation: isolate;
+  animation: neon-flicker 7s ease-in-out infinite;
+}
+
+/* CRT 扫描线：repeating gradient 叠在表面 */
+.brand-mark::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0,
+    transparent 2px,
+    rgba(0, 0, 0, 0.22) 2px,
+    rgba(0, 0, 0, 0.22) 3px
+  );
+  pointer-events: none;
+  z-index: 1;
+  border-radius: inherit;
+  mix-blend-mode: multiply;
+  opacity: 0.65;
+}
+
+/* 霓虹灯故障闪烁：97% 时间常亮，3% 的瞬间"短路"抖动 */
+@keyframes neon-flicker {
+  0%, 94%, 100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  95% {
+    opacity: 0.55;
+    filter: brightness(0.5);
+  }
+  96% {
+    opacity: 1;
+    filter: brightness(1.15);
+  }
+  97% {
+    opacity: 0.7;
+    filter: brightness(0.6);
+  }
+  98% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+/* 尊重用户的「减少动画」偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .brand-mark {
+    animation: none;
+  }
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.brand-cn {
+  font-family: var(--font-display-cn);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  color: var(--ink-light);
+}
+
+.brand-en {
+  font-family: var(--font-body-en);
+  font-weight: 500;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--ink-light-faded);
+  /* 从 4px 加到 8px：让中英两行有更舒展的呼吸感，
+     符合中英搭配 1:2 行距的排版规律 */
+  margin-top: 8px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 「加一张卡」入口 —— 小号辅助键帽
+   ---------------------------------------------------
+   与「换一张」同家族的键帽，但做成 ghost 版（低调、让路）
+   - 圆角 7px：和主 CTA 的 10px 形成家族比例
+   - 暗色渐变背景：深酒褐，融入 header
+   - 微薄侧壁（2px）：有厚度但不抢戏
+   - amber 色 ＋ 图标：唯一的点睛亮色
+*/
+.header-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 13px 0 11px;
+  border-radius: 7px;
+  color: var(--ink-light);
+  /* 暗褐色微渐变 —— 与深色 header 融合，但有厚度轮廓 */
+  background: linear-gradient(
+    180deg,
+    rgba(244, 228, 193, 0.06) 0%,
+    rgba(244, 228, 193, 0.02) 100%
+  );
+  border: none;
+  text-decoration: none;
+  font-family: var(--font-display-cn);
+  font-weight: 700;
+  font-size: 12.5px;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  box-shadow:
+    /* 顶面细高光（键帽凸面） */
+    inset 0 1px 0 rgba(244, 228, 193, 0.18),
+    /* 细奶油描边 */
+    0 0 0 1px rgba(244, 228, 193, 0.22),
+    /* 微薄侧壁（2px） */
+    0 1px 0 rgba(0, 0, 0, 0.4),
+    0 2px 0 rgba(0, 0, 0, 0.6),
+    /* 地面柔和阴影 */
+    0 3px 8px -2px rgba(0, 0, 0, 0.4);
+  transition: transform var(--t-fast) var(--ease-spring),
+              box-shadow var(--t-fast) var(--ease-out),
+              color var(--t-fast) var(--ease-out);
+}
+
+.header-add-btn:hover {
+  color: var(--ink-light);
+  box-shadow:
+    inset 0 1px 0 rgba(244, 228, 193, 0.26),
+    0 0 0 1px rgba(232, 163, 61, 0.5),
+    0 1px 0 rgba(0, 0, 0, 0.4),
+    0 2px 0 rgba(0, 0, 0, 0.6),
+    0 3px 10px -2px rgba(232, 163, 61, 0.2);
+}
+
+/* 按下：整个键帽下沉 2px，侧壁压扁 */
+.header-add-btn:active {
+  transform: translateY(2px);
+  color: var(--accent-amber);
+  box-shadow:
+    inset 0 1px 0 rgba(244, 228, 193, 0.14),
+    0 0 0 1px rgba(232, 163, 61, 0.55),
+    0 0 0 rgba(0, 0, 0, 0.4),
+    0 1px 4px -1px rgba(0, 0, 0, 0.3);
+}
+
+.add-btn-text {
+  line-height: 1;
+}
+
+.add-btn-icon {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  /* 唯一的点睛亮色：amber ＋ 图标 */
+  color: var(--accent-amber);
+}
+
+/* ---------- 5. 主内容区 / Tab Pane 切换 ---------- */
+.app-main {
+  position: relative;
+  overflow: hidden;
+}
+
+.tab-pane {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity var(--t-mid) var(--ease-out),
+              transform var(--t-mid) var(--ease-out);
+}
+
+.tab-pane.is-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.pane-inner {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 8px 22px 88px;
+  gap: 14px;
+}
+
+/* ---------- 6. 模式切换器（幼儿园 ↔ 上高速） ---------- */
+.mode-switcher {
+  position: absolute;
+  top: 28px;
+  left: 22px;
+  right: 22px;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: rgba(15, 7, 9, 0.55);
+  border: 1px solid rgba(244, 228, 193, 0.1);
+  border-radius: 999px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.mode-side {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-family: var(--font-display-cn);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  color: var(--ink-light-faded);
+  border-radius: 999px;
+  transition: color var(--t-fast) var(--ease-out),
+              background var(--t-fast) var(--ease-out);
+  white-space: nowrap;
+}
+
+.mode-side.is-active {
+  color: var(--ink-dark);
+  background: var(--accent-amber);
+}
+
+.mode-side .mode-emoji {
+  font-size: 16px;
+  filter: grayscale(0.2);
+}
+
+.mode-track {
+  position: relative;
+  height: 32px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #0A0506 0%, #1F0E13 100%);
+  border-top: 1px solid rgba(0,0,0,0.5);
+}
+
+/* 公路虚线动画 */
+.mode-road {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 6px;
+  z-index: 1;
+}
+
+.road-dash {
+  flex: 1;
+  height: 2px;
+  background: rgba(244, 228, 193, 0.35);
+  border-radius: 2px;
+}
+
+.mode-vehicle {
+  position: absolute;
+  top: 50%;
+  left: 4px;
+  transform: translate(0, -50%);
+  z-index: 2;
+  transition: left var(--t-slow) var(--ease-spring);
+}
+
+.mode-switcher[data-mode="highway"] .mode-vehicle {
+  left: calc(100% - 60px);
+}
+
+/* 高速模式下，赛道和虚线变色 */
+.mode-switcher[data-mode="highway"] .mode-track {
+  background: linear-gradient(180deg, #1B0606 0%, #3A0E0E 100%);
+}
+
+.mode-switcher[data-mode="highway"] .road-dash {
+  background: rgba(255, 77, 46, 0.5);
+  animation: road-flow 0.4s linear infinite;
+}
+
+@keyframes road-flow {
+  0% { transform: translateX(0); opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { transform: translateX(-12px); opacity: 1; }
+}
+
+/* ---------- 7. 卡片舞台 ---------- */
+.card-stage {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1200px;
+  /* 窄长屏（iPhone 16 Pro / Pro Max 等）上自适应撑开，
+     避免上下大块空白；小屏（iPhone SE 等）保留 380 兜底 */
+  min-height: clamp(380px, 58dvh, 580px);
+}
+
+/* 玩点别的：规则较多时需要可纵向滚动，短卡片仍居中 */
+.tab-pane[data-pane="other-games"] .card-stage {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  /* safe center：内容未溢出时居中，溢出时退化为 flex-start，
+     避免 align-items:center 导致顶部被裁、滚不上去 */
+  align-items: safe center;
+  /* 底部预留 60px 给悬浮的「换一张」按钮，避免遮挡最后几行规则 */
+  padding: 8px 0 60px;
+  scrollbar-width: none;
+}
+.tab-pane[data-pane="other-games"] .card-stage::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------- 8. 票根卡片：核心视觉 ---------- */
+.ticket {
+  position: relative;
+  width: 100%;
+  /* 在大屏上略微放大，仍保持票根感；小屏保留更窄宽度
+     iPhone SE (375vw) → 300px, iPhone 16 Pro (393vw) → ~346px, Pro Max (430vw) → 378px */
+  max-width: clamp(300px, 88vw, 380px);
+  background: var(--ticket-cream);
+  color: var(--ink-dark);
+  border-radius: 14px;
+  padding: 28px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  transform: rotate(-1.2deg);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.4) inset,
+    0 -1px 0 rgba(0, 0, 0, 0.08) inset,
+    0 18px 40px -10px rgba(0, 0, 0, 0.6),
+    0 4px 12px -4px rgba(0, 0, 0, 0.4);
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/><feColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.05 0 0 0 0 0.05 0 0 0 0.18 0'/></filter><rect width='100%25' height='100%25' filter='url(%23p)'/></svg>"),
+    linear-gradient(135deg, var(--ticket-cream) 0%, var(--ticket-cream-shade) 100%);
+  background-blend-mode: multiply, normal;
+  transition: transform var(--t-mid) var(--ease-spring),
+              opacity var(--t-mid) var(--ease-out);
+}
+
+/* 票根左右两侧的撕边孔洞 */
+.ticket::before,
+.ticket::after {
+  content: '';
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background: var(--bg-base);
+  border-radius: 50%;
+  bottom: 30px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.ticket::before { left: -11px; }
+.ticket::after { right: -11px; }
+
+/* 票根中部虚线（位于撕边位置） */
+.ticket-perforation {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 40px;
+  height: 2px;
+  background-image: linear-gradient(to right, var(--ink-faded) 50%, transparent 0);
+  background-size: 8px 2px;
+  background-repeat: repeat-x;
+  opacity: 0.5;
+}
+
+/* 票根上半部分：内容区 */
+.ticket-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  /* 给印章预留空间：印章高度 + 14px 缓冲，跟随 --stamp-size 同步放大 */
+  padding-bottom: calc(var(--stamp-size) + 14px);
+  /* 在窄长屏上让卡片自然撑高，缓解上下大块空白；
+     小屏仍保留 280 起步避免过矮 */
+  min-height: clamp(280px, 46dvh, 440px);
+}
+
+.ticket-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.ticket-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+  padding: 4px 8px;
+  border: 1.5px solid var(--ink-mid);
+  border-radius: 4px;
+}
+
+.ticket-no {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--ink-mid);
+  opacity: 0.7;
+}
+
+.ticket-title {
+  font-family: var(--font-display-cn);
+  /* 响应式：小屏 13px → iPhone 16 Pro 14.4px → Pro Max 15px */
+  font-size: var(--fs-ticket-title);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--ink-mid);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.ticket-content {
+  font-family: var(--font-body-cn);
+  /* 响应式：小屏 24px → iPhone 16 Pro 28px → Pro Max 30px */
+  font-size: var(--fs-ticket-content);
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--ink-dark);
+  letter-spacing: 0.02em;
+  margin-top: 4px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  transition: font-size var(--t-mid) var(--ease-out);
+}
+
+/* 字号自适应分档：字符数越多，字号越小 */
+/* 兜底字号：仅当题目 > 50 字时启用，避免撑爆卡片
+   响应式：小屏 20px → iPhone 16 Pro 23.8px → Pro Max 25.4px */
+.ticket-content.size-fallback {
+  font-size: var(--fs-ticket-content-fallback);
+  line-height: 1.45;
+  letter-spacing: 0.015em;
+}
+
+/* 其他游戏 - 多行规则 */
+.ticket-game-name {
+  font-family: var(--font-display-cn);
+  /* 响应式：小屏 28px → iPhone 16 Pro 32.4px → Pro Max 34px */
+  font-size: var(--fs-game-name);
+  font-weight: 800;
+  color: var(--ink-dark);
+  margin-top: 10px;
+  margin-bottom: 8px;
+  letter-spacing: 0.04em;
+}
+
+.ticket-game-desc {
+  font-family: var(--font-body-cn);
+  /* 响应式：小屏 14px → iPhone 16 Pro 16px → Pro Max 16.8px */
+  font-size: var(--fs-game-desc);
+  line-height: 1.6;
+  color: var(--ink-mid);
+  margin-bottom: 14px;
+  font-weight: 500;
+}
+
+.ticket-game-rules {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  counter-reset: rule;
+}
+
+.ticket-game-rules li {
+  position: relative;
+  font-family: var(--font-body-cn);
+  /* 响应式：小屏 13px → iPhone 16 Pro 14.7px → Pro Max 15px */
+  font-size: var(--fs-game-rule);
+  line-height: 1.55;
+  color: var(--ink-dark);
+  padding-left: 26px;
+  counter-increment: rule;
+}
+
+.ticket-game-rules li::before {
+  content: counter(rule);
+  position: absolute;
+  left: 0;
+  top: 1px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-dark);
+  background: var(--accent-amber);
+  padding: 2px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+}
+
+/* 玩点别的卡片字号自适应分档 */
+.ticket.size-md .ticket-game-name {
+  font-size: 24px;
+  margin-top: 8px;
+  margin-bottom: 6px;
+}
+.ticket.size-md .ticket-game-desc {
+  font-size: 13px;
+  line-height: 1.55;
+  margin-bottom: 12px;
+}
+.ticket.size-md .ticket-game-rules {
+  gap: 7px;
+}
+.ticket.size-md .ticket-game-rules li {
+  font-size: 12px;
+  line-height: 1.5;
+  padding-left: 24px;
+}
+
+.ticket.size-sm .ticket-game-name {
+  font-size: 22px;
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
+.ticket.size-sm .ticket-game-desc {
+  font-size: 12px;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+.ticket.size-sm .ticket-game-rules {
+  gap: 6px;
+}
+.ticket.size-sm .ticket-game-rules li {
+  font-size: 11.5px;
+  line-height: 1.45;
+  padding-left: 22px;
+}
+.ticket.size-sm .ticket-game-rules li::before {
+  font-size: 9px;
+  padding: 1px 4px;
+}
+
+/* 票根下半部分：序列号 + 印章 */
+.ticket-stub {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 13px;
+  /* 高度跟随印章尺寸，避免大屏放大后被截断 */
+  height: var(--stamp-size);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.stub-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stub-label {
+  font-family: var(--font-body-en);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+  opacity: 0.7;
+}
+
+.stub-serial {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink-dark);
+  letter-spacing: 0.05em;
+}
+
+/* 印章：旋转 + 磨损质感（响应式：随屏高放大） */
+.stub-stamp {
+  width: var(--stamp-size);
+  height: var(--stamp-size);
+  border: 2.5px solid currentColor;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display-cn);
+  font-weight: 900;
+  font-size: var(--stamp-fs);
+  letter-spacing: 0.1em;
+  color: var(--ticket-blood);
+  text-align: center;
+  transform: rotate(-12deg);
+  position: relative;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+.stub-stamp::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  opacity: 0.6;
+}
+
+.stub-stamp .stamp-text {
+  position: relative;
+  z-index: 1;
+  line-height: 1;
+}
+
+/* ---------- 9. 票根主题变体 ---------- */
+
+/* 上高速 - 真心话 - 暗血红 */
+.ticket.is-blood {
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.22 0'/></filter><rect width='100%25' height='100%25' filter='url(%23p)'/></svg>"),
+    linear-gradient(135deg, var(--ticket-blood) 0%, var(--ticket-blood-shade) 100%);
+  background-blend-mode: multiply, normal;
+  color: var(--ink-light);
+}
+
+.ticket.is-blood .ticket-tag,
+.ticket.is-blood .ticket-no,
+.ticket.is-blood .ticket-title,
+.ticket.is-blood .stub-label {
+  color: var(--ink-light-faded);
+  border-color: var(--ink-light-faded);
+}
+
+.ticket.is-blood .ticket-content,
+.ticket.is-blood .stub-serial {
+  color: var(--ink-light);
+}
+
+.ticket.is-blood .ticket-perforation {
+  background-image: linear-gradient(to right, var(--ink-light-faded) 50%, transparent 0);
+  background-size: 8px 2px;
+}
+
+.ticket.is-blood .stub-stamp {
+  color: var(--accent-amber);
+}
+
+/* 上高速 - 大冒险 - 火焰橘 */
+.ticket.is-fire {
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.22 0'/></filter><rect width='100%25' height='100%25' filter='url(%23p)'/></svg>"),
+    linear-gradient(135deg, var(--ticket-fire) 0%, var(--ticket-fire-shade) 100%);
+  background-blend-mode: multiply, normal;
+  color: var(--ink-light);
+}
+
+.ticket.is-fire .ticket-tag,
+.ticket.is-fire .ticket-no,
+.ticket.is-fire .ticket-title,
+.ticket.is-fire .stub-label {
+  color: var(--ink-light-faded);
+  border-color: var(--ink-light-faded);
+}
+
+.ticket.is-fire .ticket-content,
+.ticket.is-fire .stub-serial {
+  color: var(--ink-light);
+}
+
+.ticket.is-fire .ticket-perforation {
+  background-image: linear-gradient(to right, var(--ink-light-faded) 50%, transparent 0);
+  background-size: 8px 2px;
+}
+
+.ticket.is-fire .stub-stamp {
+  color: var(--ink-light);
+}
+
+/* 牛皮纸 - 其他游戏 */
+.ticket.is-kraft {
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3'/><feColorMatrix values='0 0 0 0 0.15 0 0 0 0 0.08 0 0 0 0 0.04 0 0 0 0.25 0'/></filter><rect width='100%25' height='100%25' filter='url(%23p)'/></svg>"),
+    linear-gradient(135deg, var(--ticket-kraft) 0%, var(--ticket-kraft-shade) 100%);
+  background-blend-mode: multiply, normal;
+  transform: rotate(-0.6deg);
+}
+
+.ticket.is-kraft .ticket-body {
+  padding-bottom: calc(var(--stamp-size) + 14px);
+  min-height: auto;
+}
+
+/* ---------- 10. 票根入场 / 退场动画 ---------- */
+.ticket.enter {
+  animation: ticket-enter 520ms var(--ease-spring);
+}
+
+@keyframes ticket-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(-40px) rotate(8deg) scale(0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(4px) rotate(-2.5deg) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotate(-1.2deg) scale(1);
+  }
+}
+
+.ticket.leave {
+  animation: ticket-leave 280ms var(--ease-out) forwards;
+}
+
+@keyframes ticket-leave {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(-1.2deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-100%) rotate(-12deg) scale(0.85);
+  }
+}
+
+.ticket.is-kraft.enter {
+  animation: ticket-enter-kraft 520ms var(--ease-spring);
+}
+
+@keyframes ticket-enter-kraft {
+  0% { opacity: 0; transform: translateY(-30px) rotate(6deg) scale(0.92); }
+  60% { opacity: 1; transform: translateY(2px) rotate(-1.4deg) scale(1.01); }
+  100% { opacity: 1; transform: translateY(0) rotate(-0.6deg) scale(1); }
+}
+
+/* ---------- 11. 换一张按钮 ----------
+   现代实体按键 · 真实光影
+   --------------------------------------
+   抛弃"彩色硬阴影阶梯"的 Skeuomorphism 套路，
+   改用"凸面渐变 + 双层带 blur 的柔和阴影"：
+     - key light shadow：偏移小、blur 小，制造关键投影
+     - ambient shadow：偏移大、blur 大，制造环境氛围
+     - amber 暖色底光：极淡，让按钮"漂浮"在暗背景之上
+   参考语言：Apple HIG / Material Elevation 6 / 真实物理按键
+*/
+.shuffle-btn {
+  position: absolute;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 34px;
+  color: var(--ink-dark);
+  font-family: var(--font-display-cn);
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: 0.14em;
+  border-radius: 14px;
+  /* 极轻微的凸面渐变：顶端略亮 → 底端略暗，仅作哑光质感 */
+  background: linear-gradient(180deg, #EFAE4E 0%, #D89636 100%);
+  /* 真实物理光影：3 层柔和阴影 + 内部光感 */
+  box-shadow:
+    /* 顶面柔和高光（凸面塑料质感） */
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    /* 底部内嵌微凹陷（材质边缘暗角） */
+    inset 0 -1px 2px rgba(86, 50, 8, 0.18),
+    /* Key light：1px 偏移 + 2px blur，紧贴按钮的清晰投影 */
+    0 1px 2px rgba(0, 0, 0, 0.25),
+    /* Ambient light：6px 偏移 + 16px blur，环境柔和投影 */
+    0 6px 16px -2px rgba(0, 0, 0, 0.35),
+    /* Amber 暖色底光：让按钮"漂浮"在深背景之上 */
+    0 14px 28px -10px rgba(232, 163, 61, 0.3);
+  transition: transform var(--t-fast) var(--ease-spring),
+              box-shadow var(--t-fast) var(--ease-out);
+  min-height: 50px;
+  white-space: nowrap;
+}
+
+/* 按下：仅下沉 2px，投影同步收缩 —— 真实物理反馈 */
+.shuffle-btn:active {
+  transform: translateX(-50%) translateY(2px);
+  background: linear-gradient(180deg, #E0A040 0%, #C8861E 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    /* 按下时变成内凹：上方 inset 阴影 */
+    inset 0 2px 4px rgba(86, 50, 8, 0.3),
+    /* 投影收缩 */
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    0 2px 6px -1px rgba(0, 0, 0, 0.25);
+}
+
+/* ---------- 12. 底部 Tab Bar ---------- */
+.tab-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  height: var(--tab-bar-h);
+  background: linear-gradient(180deg, rgba(15, 7, 9, 0.6) 0%, rgba(15, 7, 9, 0.92) 100%);
+  border-top: 1px solid rgba(244, 228, 193, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  position: relative;
+  padding: 0 8px;
+}
+
+.tab-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--ink-light-faded);
+  font-family: var(--font-display-cn);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  transition: color var(--t-fast) var(--ease-out);
+  min-height: 48px;
+}
+
+.tab-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  transition: transform var(--t-mid) var(--ease-spring);
+}
+
+.tab-indicator {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 24px;
+  height: 3px;
+  background: var(--accent-amber);
+  border-radius: 999px;
+  transform: translateX(-50%) scaleX(0);
+  transform-origin: center;
+  opacity: 0;
+  transition: transform var(--t-mid) var(--ease-spring),
+              opacity var(--t-fast) var(--ease-out);
+  box-shadow: 0 0 8px var(--accent-amber);
+}
+
+.tab-item.is-active {
+  color: var(--accent-amber);
+}
+
+.tab-item.is-active .tab-icon {
+  transform: translateY(-2px);
+}
+
+.tab-item.is-active .tab-indicator {
+  transform: translateX(-50%) scaleX(1);
+  opacity: 1;
+}
+
+.tab-item:active .tab-icon {
+  transform: scale(0.9);
+}
+
+/* ---------- 13. 减少动画偏好 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------- 14. 小屏适配 ---------- */
+@media (max-height: 700px) {
+  .ticket {
+    padding: 22px 22px 18px;
+  }
+  .ticket-content {
+    font-size: 19px;
+  }
+  .ticket-body {
+    min-height: 240px;
+  }
+}
+
+@media (max-width: 360px) {
+  .ticket-content {
+    font-size: 19px;
+  }
+  .brand-en {
+    display: none;
+  }
+}
