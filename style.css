@@ -55,41 +55,47 @@
 
   /* ---------- 响应式字号（基于屏高线性插值）----------
      基准机型：
-       iPhone SE (667dvh) → 下限
-       iPhone 16 Pro (852dvh) → 中间点
-       iPhone 16 Pro Max (932dvh) → 上限
-     公式： clamp(min, a·vh + b, max) */
+       iPhone SE (667pt) → 下限
+       iPhone 16 Pro (852pt) → 中间点
+       iPhone 16 Pro Max (932pt) → 上限
+     公式： clamp(min, a·lvh + b, max)
+     ─ 使用 lvh（large viewport height）而非 dvh / svh：
+       · 字号必须稳定，不能随 iOS Safari 地址栏伸缩而跳变；
+       · 选 lvh = 地址栏折叠时的大视口基数，也是"视觉完整状态"下的字号预期；
+       · 布局相关单位（见下 --card-stage-*）用 dvh 响应式，两类各司其职。 */
 
   /* 票根主文字（抓手指/真心话/大冒险卡片内容，≤50字）
      SE 24 → iPhone 16 Pro 32 → Pro Max 35 */
-  --fs-ticket-content: clamp(24px, 4.3vh - 4.7px, 36px);
+  --fs-ticket-content: clamp(24px, 4.3lvh - 4.7px, 36px);
   /* 票根主文字兜底（>50字，长文本）
      SE 20 → iPhone 16 Pro 26 → Pro Max 29 */
-  --fs-ticket-content-fallback: clamp(20px, 3.5vh - 3.4px, 30px);
+  --fs-ticket-content-fallback: clamp(20px, 3.5lvh - 3.4px, 30px);
   /* 票根标签（GRAB · 抓手指 / TRUTH · 真心话 等 eyebrow）
      SE 13 → iPhone 16 Pro 15 → Pro Max 16 */
-  --fs-ticket-title: clamp(12px, 1.05vh + 6px, 16px);
+  --fs-ticket-title: clamp(12px, 1.05lvh + 6px, 16px);
   /* 玩点别的：游戏名称
      SE 28 → iPhone 16 Pro 36 → Pro Max 39 */
-  --fs-game-name: clamp(26px, 3.6vh + 5.3px, 40px);
+  --fs-game-name: clamp(26px, 3.6lvh + 5.3px, 40px);
   /* 玩点别的：游戏描述（大幅放大：因为有 vertical scroll，
      不需要为了塞下而缩字号；可读性优先）
      SE 15 → iPhone 16 Pro 19 → Pro Max 20.5 */
-  --fs-game-desc: clamp(15px, 1.9vh + 2.8px, 21px);
+  --fs-game-desc: clamp(15px, 1.9lvh + 2.8px, 21px);
   /* 玩点别的：规则条目（同样大幅放大）
      SE 14 → iPhone 16 Pro 17 → Pro Max 18.5 */
-  --fs-game-rule: clamp(14px, 1.7vh + 2.7px, 19px);
+  --fs-game-rule: clamp(14px, 1.7lvh + 2.7px, 19px);
 
-  /* ---------- 印章尺寸（与字号同节奏放大）----------
+  /* ---------- 印章尺寸（与字号同节奏放大，同样用 lvh 稳定）----------
      SE 56 → iPhone 16 Pro 68 → Pro Max 74 */
-  --stamp-size: clamp(56px, 7vh + 9px, 80px);
+  --stamp-size: clamp(56px, 7lvh + 9px, 80px);
   /* SE 11 → iPhone 16 Pro 13 → Pro Max 14 */
-  --stamp-fs: clamp(10px, 1vh + 4.5px, 14px);
+  --stamp-fs: clamp(10px, 1lvh + 4.5px, 14px);
 
-  /* 真心话 / 大冒险 / 抓手指：模式条或与之对齐的统一顶距（抓手指无模式条，用同值与后两者垂直对齐） */
-  --card-stage-top-offset: clamp(114px, 10.5dvh + 58px, 154px);
-  /* 玩点别的：无模式条，顶距小于上一项，避免贴标题行，并与「换一张」侧留白大致对称；不压掉过多可阅读高度 */
-  --card-stage-top-offset-other: clamp(44px, 6dvh + 24px, 86px);
+  /* ---------- 流式顶部布局变量 ----------
+     新架构（2026/04）：.mode-switcher 从 absolute 回归 in-flow flex child。
+     所有 tab 的卡片顶距完全由 flex 布局自然决定，不再手算魔法数字。
+     ─ --mode-row-h：mode-switcher 的实测高度（= grid 内 .mode-side 33px + padding 12px ≈ 46px，
+       响应式：小屏略缩）。抓手指 / 玩点别的无 mode-switcher，用 ::before 占同高位保持对齐。 */
+  --mode-row-h: clamp(42px, 5dvh + 14px, 50px);
   /* 玩点别的 kraft：在 stage 内 max-height 再收一截；inset 变小 = 卡片更高，能装下更多规则 */
   --other-games-ticket-h-inset: clamp(6px, 1.5dvh, 18px);
   /* 玩点别的：可滚动时底部渐变蒙层高度（末行半隐提示） */
@@ -173,8 +179,16 @@ button {
 .app {
   position: relative;
   width: 100%;
+  /* —— iPhone 15 Pro Safari「底部 tab 被工具栏挡」的根因修复 ——
+     · 之前：height: 100dvh + min-height: 100vh。
+       在 iOS Safari，100vh ≡ 100lvh（≈915pt，地址栏折叠时的大视口），
+       min-height 直接把 app 撑到 915pt；而地址栏展开时实际可见区仅 ≈758pt
+       → app 超出可见区，tab-bar 跌出屏幕底部。
+     · 现在：height: 100dvh（动态跟随地址栏伸缩，app 永远 = 当前可见区），
+       不再设 min-height，从而绝不会比可见区更高。
+     · grid 1fr 行：.app-main 吸满剩余高度，切换 tab 时卡片舞台拿到
+       「可见区 − header − tab-bar」的稳定空间。 */
   height: 100dvh;
-  min-height: 100vh;
   display: grid;
   grid-template-rows: auto 1fr auto;
   max-width: 480px;
@@ -445,13 +459,19 @@ button {
   gap: 14px;
 }
 
-/* ---------- 6. 模式切换器（幼儿园 ↔ 上高速） ---------- */
+/* ---------- 6. 模式切换器（幼儿园 ↔ 上高速） ----------
+   架构（2026/04 重构）：
+   · 之前：position: absolute + top: 28px，配合 .card-stage 手动 padding-top 对齐，
+     引入两个魔法 clamp 变量，模式条高度一改就要全员同步。
+     还存在「绝对定位未吃 safe-area」的潜在刘海撞击风险。
+   · 现在：作为 .pane-inner 的 in-flow flex child 自然排在首位，
+     高度（var(--mode-row-h)）和 gap(14px) 由 flex 自动让位给下方 .card-stage，
+     不再需要任何 padding-top 补偿；且 .app 的 padding-top: var(--safe-top)
+     已确保所有内容位于刘海/灵动岛之下。 */
 .mode-switcher {
-  position: absolute;
-  top: 28px;
-  left: 22px;
-  right: 22px;
-  z-index: 5;
+  flex-shrink: 0;
+  width: 100%;
+  height: var(--mode-row-h);
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
@@ -465,6 +485,17 @@ button {
   touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
+}
+
+/* 抓手指 / 玩点别的：没有 mode-switcher，用 ::before 占同高位，
+   保证 4 个 tab 切换时卡片起始位置稳定对齐，避免"一上一下"的跳动感。 */
+.tab-pane[data-pane="grab-finger"] .pane-inner::before,
+.tab-pane[data-pane="other-games"] .pane-inner::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: var(--mode-row-h);
+  flex-shrink: 0;
 }
 
 .mode-side {
@@ -566,7 +597,8 @@ button {
   align-items: center;
   justify-content: center;
   perspective: 1200px;
-  /* 默认顶距 0；各 tab 在下方覆盖 */
+  /* 顶距由 .pane-inner 的 flex 流自然确定（mode-switcher / 占位 + gap），
+     stage 内部不再做 padding-top 补偿。 */
   padding-top: 0;
   /* 底部为 shuffle-btn 预留 ~72px：
      shuffle-btn 高 ~46px + 视觉缓冲 ~26px，
@@ -577,18 +609,7 @@ button {
   min-height: clamp(380px, 58dvh, 580px);
 }
 
-/* 真心话 / 大冒险：模式条占顶；抓手指：无模式条但与上两者同一顶距，切换 tab 时卡片垂直对齐 */
-.tab-pane[data-pane="truth"] .card-stage,
-.tab-pane[data-pane="dare"] .card-stage,
-.tab-pane[data-pane="grab-finger"] .card-stage {
-  padding-top: var(--card-stage-top-offset);
-}
-
-/* 玩点别的：略短的顶距 + 票根 max-height 再收紧，减轻贴顶、与底部按钮区更对称 */
-.tab-pane[data-pane="other-games"] .card-stage {
-  padding-top: var(--card-stage-top-offset-other);
-}
-
+/* 玩点别的：kraft 票根 max-height 再收一点，卡片略短、与上方占位间保留呼吸距离 */
 .tab-pane[data-pane="other-games"] .ticket.is-kraft {
   max-height: calc(100% - var(--other-games-ticket-h-inset));
 }
@@ -879,7 +900,7 @@ button {
 
 .ticket.size-md .ticket-game-name {
   /* 130–200 字：游戏名仅小幅压缩，规则字号完全不动 */
-  font-size: clamp(24px, 3.2vh + 4.5px, 36px);
+  font-size: clamp(24px, 3.2lvh + 4.5px, 36px);
   margin-top: 8px;
   margin-bottom: 6px;
 }
@@ -894,13 +915,13 @@ button {
 /* 规则字号在 md 档完全不缩 */
 
 .ticket.size-sm .ticket-game-name {
-  font-size: clamp(22px, 2.8vh + 3.5px, 32px);
+  font-size: clamp(22px, 2.8lvh + 3.5px, 32px);
   margin-top: 6px;
   margin-bottom: 4px;
 }
 .ticket.size-sm .ticket-game-desc {
   /* SE 14px / 16 Pro 17px / Pro Max 18px —— 仍可读 */
-  font-size: clamp(14px, 1.5vh + 4px, 19px);
+  font-size: clamp(14px, 1.5lvh + 4px, 19px);
   line-height: 1.5;
   margin-bottom: 10px;
 }
@@ -909,7 +930,7 @@ button {
 }
 .ticket.size-sm .ticket-game-rules li {
   /* SE 13px / 16 Pro 15.5px / Pro Max 17px */
-  font-size: clamp(13px, 1.4vh + 3.5px, 17px);
+  font-size: clamp(13px, 1.4lvh + 3.5px, 17px);
   line-height: 1.5;
   padding-left: 24px;
 }
@@ -1247,16 +1268,6 @@ button {
              swipe-affordance-breathe 2.6s ease-in-out 1400ms infinite;
 }
 
-.swipe-affordance::before,
-.swipe-affordance::after {
-  content: '';
-  display: block;
-  width: 18px;
-  height: 1px;
-  background: currentColor;
-  opacity: 0.5;
-}
-
 .swipe-affordance .arrow {
   display: inline-block;
   font-family: var(--font-display-en);
@@ -1377,8 +1388,8 @@ button {
 /* ---------- 14. 小屏适配 ---------- */
 @media (max-height: 700px) {
   :root {
-    --card-stage-top-offset: clamp(98px, 9dvh + 46px, 128px);
-    --card-stage-top-offset-other: clamp(36px, 5dvh + 20px, 68px);
+    /* 小屏：mode-switcher 行高略收紧；其他布局参数自适应 */
+    --mode-row-h: clamp(38px, 4.5dvh + 12px, 46px);
     --other-games-ticket-h-inset: clamp(4px, 1.2dvh, 14px);
     --kraft-scroll-fade-h: clamp(28px, 7dvh, 40px);
   }
