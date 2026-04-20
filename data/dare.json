@@ -2,8 +2,14 @@
   "meta": {
     "name": "大冒险",
     "modes": {
-      "kindergarten": { "label": "幼儿园", "emoji": "🚌" },
-      "highway": { "label": "上高速", "emoji": "🛣️" }
+      "kindergarten": {
+        "label": "幼儿园",
+        "emoji": "🚌"
+      },
+      "highway": {
+        "label": "上高速",
+        "emoji": "🛣️"
+      }
     }
   },
   "cards": {
@@ -35,6 +41,12 @@
       {
         "id": "da_k_007",
         "task": "打开微信钱包展示余额。"
+      },
+      {
+        "id": "da_k_008",
+        "task": "做十个蹲起。",
+        "author": "kayla",
+        "submittedAt": "2026-04-20T18:11:35.026Z"
       }
     ],
     "highway": [
