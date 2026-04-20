@@ -30,6 +30,18 @@
   --v3-font-display: "Archivo Black", "Alimama ShuHeiTi", "PingFang SC", sans-serif;
   --v3-font-cn: "Alimama ShuHeiTi", "Smiley Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   --v3-font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* ---------- 纵向呼吸距（响应式，跟 viewport 高度一起缩放） ---------- *
+   · --v3-gap        = hero↔mode↔card↔shuffle 共用的统一间距
+   · --v3-shuffle-h  = 换一张按钮视觉高度（含描边 / 阴影占位）
+   · --v3-shuffle-bottom = shuffle 距 pane 底部的安全距
+   · 窄屏 (SE ~667lvh): gap≈18, shuffle≈20
+   · 普通屏 (800lvh):   gap≈22, shuffle≈24
+   · 大屏 (Pro Max 932):gap≈26, shuffle≈28
+   · 超大 (平板 1024):  gap≈28（封顶 30）, shuffle≈31 */
+  --v3-gap: clamp(16px, 2.8lvh, 30px);
+  --v3-shuffle-h: 48px;
+  --v3-shuffle-bottom: clamp(20px, 3lvh, 36px);
 }
 
 body[data-tab="grab-finger"] { --v3-color: var(--v3-grab); }
@@ -78,15 +90,15 @@ body {
 }
 
 /* v1 的霓虹"疯" logo 被替换成 v3 简洁方标
-   —— 按设计稿，logo 始终用品牌色 grab-amber，不跟随 tab 变色 */
+   —— logo 颜色跟随当前 tab 主色 (--v3-color)，整站风格同步 */
 .brand-mark.v3-logo {
   width: 30px;
   height: 30px;
   padding: 0;
   background: var(--v3-surface);
   background-image: none !important;
-  color: var(--v3-grab);
-  border: 1.5px solid var(--v3-grab);
+  color: var(--v3-color);
+  border: 1.5px solid var(--v3-color);
   border-radius: 3px;
   display: grid;
   place-items: center;
@@ -96,13 +108,15 @@ body {
   letter-spacing: 0;
   transform: rotate(-3deg);
   box-shadow:
-    0 0 6px var(--v3-grab),
-    0 0 16px color-mix(in oklab, var(--v3-grab) 60%, transparent),
-    inset 0 0 6px color-mix(in oklab, var(--v3-grab) 40%, transparent);
-  text-shadow: 0 0 6px var(--v3-grab);
+    0 0 6px var(--v3-color),
+    0 0 16px color-mix(in oklab, var(--v3-color) 60%, transparent),
+    inset 0 0 6px color-mix(in oklab, var(--v3-color) 40%, transparent);
+  text-shadow: 0 0 6px var(--v3-color);
   animation: none !important;
   overflow: visible;
   isolation: auto;
+  transition: color 300ms ease, border-color 300ms ease,
+              box-shadow 300ms ease, text-shadow 300ms ease;
 }
 .brand-mark.v3-logo::before,
 .brand-mark.v3-logo::after { display: none !important; }
@@ -126,49 +140,60 @@ body {
   transition: color 300ms ease;
 }
 
-/* "+ 加一张卡" 按钮 —— 品牌色，固定用 grab-amber，不随 tab 切换 */
+/* "+ 加一张卡" 按钮 —— 跟随当前 tab 主色 (--v3-color) 切换 */
 .header-add-btn.v3-add-btn {
   height: auto;
   padding: 5px 8px;
   gap: 4px;
   background: transparent !important;
-  color: var(--v3-grab);
-  border: 1.5px solid var(--v3-grab);
+  color: var(--v3-color);
+  border: 1.5px solid var(--v3-color);
   border-radius: 0;
   font-family: var(--v3-font-cn);
   font-size: 10.5px;
   letter-spacing: 0;
   white-space: nowrap;
   flex-shrink: 0;
-  text-shadow: 0 0 8px color-mix(in oklab, var(--v3-grab) 50%, transparent);
+  text-shadow: 0 0 8px color-mix(in oklab, var(--v3-color) 50%, transparent);
   box-shadow:
-    0 0 10px color-mix(in oklab, var(--v3-grab) 30%, transparent),
-    inset 0 0 8px color-mix(in oklab, var(--v3-grab) 10%, transparent);
-  transition: color 200ms ease, box-shadow 200ms ease, transform 120ms ease;
+    0 0 10px color-mix(in oklab, var(--v3-color) 30%, transparent),
+    inset 0 0 8px color-mix(in oklab, var(--v3-color) 10%, transparent);
+  transition: color 300ms ease, border-color 300ms ease,
+              box-shadow 300ms ease, text-shadow 300ms ease,
+              transform 120ms ease;
 }
 .header-add-btn.v3-add-btn .add-btn-icon { color: inherit; }
 .header-add-btn.v3-add-btn .add-btn-text { line-height: 1; }
 .header-add-btn.v3-add-btn:hover,
 .header-add-btn.v3-add-btn:focus-visible {
-  color: var(--v3-grab);
+  color: var(--v3-color);
   box-shadow:
-    0 0 16px color-mix(in oklab, var(--v3-grab) 55%, transparent),
-    inset 0 0 12px color-mix(in oklab, var(--v3-grab) 18%, transparent);
+    0 0 16px color-mix(in oklab, var(--v3-color) 55%, transparent),
+    inset 0 0 12px color-mix(in oklab, var(--v3-color) 18%, transparent);
   transform: none;
 }
 .header-add-btn.v3-add-btn:active {
   transform: scale(0.97);
-  color: var(--v3-grab);
+  color: var(--v3-color);
   box-shadow:
-    0 0 8px color-mix(in oklab, var(--v3-grab) 40%, transparent),
-    inset 0 0 8px color-mix(in oklab, var(--v3-grab) 14%, transparent);
+    0 0 8px color-mix(in oklab, var(--v3-color) 40%, transparent),
+    inset 0 0 8px color-mix(in oklab, var(--v3-color) 14%, transparent);
 }
 
 
-/* ---------- 4. Pane / 布局微调 ---------- */
+/* ---------- 4. Pane / 布局微调 ----------
+   除 header/tabbar 外，其余元素（hero、mode、card、shuffle）
+   靠 card-stage 的 flex:1 让卡片纵向拉满剩余空间（沿用 v1 思路），
+   再把 shuffle 贴近卡片底，整体均匀呼吸。 */
 .pane-inner {
-  padding: 6px 16px 96px;
-  gap: 10px;
+  /* 纵向四处呼吸距全部取自 --v3-gap，随 viewport 高度自动缩放：
+     · padding-top    = --v3-gap               （header↔hero）
+     · gap            = --v3-gap               （hero↔mode↔card）
+     · padding-bottom = shuffle-bottom + 按钮高 + gap（card↔shuffle 同样 = gap）
+     左右 16，小屏统一 */
+  padding: var(--v3-gap) 16px
+           calc(var(--v3-shuffle-bottom) + var(--v3-shuffle-h) + var(--v3-gap));
+  gap: var(--v3-gap);
 }
 /* v1 的 "占位行" 不再需要，因为现在每个 tab 都有 hero 吃掉视觉高度 */
 .tab-pane[data-pane="grab-finger"] .pane-inner::before,
@@ -309,7 +334,81 @@ body {
 .card-stage {
   background: transparent;
   padding-top: 0;
-  /* 给 shuffle 按钮预留空间（v1 也是 72px），保留不动 */
+  /* v3：shuffle 让位改到 .pane-inner padding-bottom；此处不再内 padding-bottom 与 min-height 抢高度。
+     align-items: stretch 让 .ticket 纵向拉满 card-stage（对齐 v1「卡片响应式撑满」思路）。 */
+  padding-bottom: 0 !important;
+  min-height: 0 !important;
+  align-items: stretch !important;
+  isolation: isolate;
+}
+
+/* v3：不用底部 ‹ SWIPE › 文案，改为卡片两侧边缘暗示（pointer-events: none 不误触） */
+.card-stage::before,
+.card-stage::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: clamp(22px, 5.5vw, 34px);
+  height: clamp(100px, 34%, 220px);
+  pointer-events: none;
+  z-index: 2;
+  font-family: var(--v3-font-mono);
+  font-size: clamp(20px, 5.5vw, 28px);
+  font-weight: 300;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: color-mix(in oklab, var(--v3-color) 58%, transparent);
+  opacity: 0.56;
+  border-radius: 8px;
+  transition: opacity 380ms ease, visibility 0s linear 400ms;
+  animation: v3-edge-hint-breathe 2.8s ease-in-out infinite;
+}
+.card-stage::before {
+  content: "‹";
+  left: max(4px, calc(50% - clamp(150px, 46vw, 210px) - 28px));
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--v3-color) 20%, transparent) 0%,
+    transparent 100%
+  );
+}
+.card-stage::after {
+  content: "›";
+  right: max(4px, calc(50% - clamp(150px, 46vw, 210px) - 28px));
+  left: auto;
+  background: linear-gradient(
+    270deg,
+    color-mix(in oklab, var(--v3-color) 20%, transparent) 0%,
+    transparent 100%
+  );
+}
+/* 首次滑动或点「换一张」后（与 v1 相同 #app.has-swiped）淡出 */
+.app.has-swiped .card-stage::before,
+.app.has-swiped .card-stage::after {
+  opacity: 0 !important;
+  visibility: hidden;
+  animation: none;
+}
+
+@keyframes v3-edge-hint-breathe {
+  0%,
+  100% {
+    opacity: 0.42;
+  }
+  50% {
+    opacity: 0.68;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-stage::before,
+  .card-stage::after {
+    animation: none;
+    opacity: 0.5;
+  }
 }
 
 /* 核心：把 v1 奶油/血红/火橘票根全部压成 v3 霓虹黑卡 */
@@ -321,14 +420,20 @@ body {
   border: 1.5px solid var(--v3-color) !important;
   border-radius: 0 !important;
   padding: 18px 18px 52px !important;
-  transform: none !important;
+  /* 基础态 rotate(0)（不带 !important），让 v1 的 @keyframes 动画在切卡时能正常播放 */
+  transform: rotate(0deg);
   box-shadow:
     0 0 18px color-mix(in oklab, var(--v3-color) 25%, transparent),
     inset 0 0 22px color-mix(in oklab, var(--v3-color) 10%, transparent),
     0 10px 28px rgba(0, 0, 0, 0.55) !important;
+  /* 宽度响应式，居中 */
+  width: 100%;
   max-width: clamp(300px, 92vw, 420px);
-  /* 给短题 / 长题都一个舒适的视觉高度区间。短题不显得局促，长题仍可 body 内部滚动 */
-  min-height: clamp(200px, 32dvh, 340px);
+  margin: 0 auto;
+  /* 纵向：让卡片撑满 card-stage（跟 v1 一致），短题由 ticket-body 居中呈现 */
+  min-height: 0 !important;
+  max-height: 100% !important;
+  height: 100%;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -346,24 +451,27 @@ body {
   padding: 0 !important;
   background: transparent !important;
   flex: 1;
-  /* 抹掉 v1 的 min-height / justify-content:center（那是为卡片中居中文字服务的）。
-     v3 要的是"eyebrow → 题干 → stamp"自上而下的排布，题干紧跟 eyebrow 自然留白 */
+  /* 卡片被 card-stage stretch 为全高，ticket-body 纵向 center，
+     让短题不贴顶、长题也居中阅读；超长题仍可靠内部 overflow 滚动 */
   min-height: 0 !important;
-  justify-content: flex-start !important;
+  justify-content: center !important;
   display: flex;
   flex-direction: column;
+  gap: 6px;
 }
 .ticket-body::before,
 .ticket-body::after {
   display: none !important;
 }
 
-/* v1 把 .ticket-title 绝对定位在 body 顶部（腾出居中空间）—— v3 不再需要，恢复流式 */
+/* v1 把 .ticket-title 绝对定位在 body 顶部 —— v3 恢复流式，并让它和内容一起被 body 居中 */
 .ticket:not(.is-kraft) .ticket-title {
   position: static !important;
   margin-bottom: 8px !important;
 }
-.ticket:not(.is-kraft) .ticket-body {
+/* 玩点别的（kraft）卡的内容是"标题+描述+规则列表"，通常较长，
+   body 需要从顶部开始排列才便于 overflow 滚动阅读 */
+.ticket.is-kraft .ticket-body {
   justify-content: flex-start !important;
 }
 
@@ -562,6 +670,11 @@ body {
   background: var(--v3-card) !important;
   color: var(--v3-ink) !important;
 }
+/* is-kraft 基础态也归平（v1 里是 -0.6°，v3 统一不倾斜），
+   注意不带 !important，留给 @keyframes 入场动画播放旋转 */
+.ticket.is-kraft {
+  transform: rotate(0deg);
+}
 .ticket.is-blood .ticket-tag,
 .ticket.is-blood .ticket-no,
 .ticket.is-blood .ticket-title,
@@ -592,18 +705,27 @@ body {
   mask-image: none !important;
 }
 
-/* ticket 入场 / 离场动画：保留 v1 时间，但去旋转与位移夸张效果 */
-.ticket.enter,
-.ticket.is-kraft.enter { transform: none !important; }
-.ticket.leave { opacity: 0; transition: opacity 220ms ease; }
+/* 票根入场 / 退场：沿用 v1 的弹性动画节奏，
+   但因 v3 卡片不保留 v1 那 -1.2° 永久倾斜，需把关键帧的终态 rotate 归零。
+   后加载的 @keyframes 同名规则会覆盖 v1 的定义。 */
+@keyframes ticket-enter {
+  0%   { opacity: 0; transform: translateY(-40px) rotate(8deg) scale(0.9); }
+  60%  { opacity: 1; transform: translateY(4px) rotate(-2deg) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+}
+@keyframes ticket-enter-kraft {
+  0%   { opacity: 0; transform: translateY(-30px) rotate(6deg) scale(0.92); }
+  60%  { opacity: 1; transform: translateY(2px) rotate(-1deg) scale(1.01); }
+  100% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+}
+@keyframes ticket-leave {
+  0%   { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+  100% { opacity: 0; transform: translateX(-100%) rotate(-12deg) scale(0.85); }
+}
 
-/* Swipe affordance：只保留极淡提示 */
+/* v3：底部 ‹ SWIPE › 已弃用，由 .card-stage 左右边缘暗示替代 */
 .swipe-affordance {
-  color: var(--v3-muted);
-  opacity: 0.45;
-  letter-spacing: 0.3em;
-  font-family: var(--v3-font-mono);
-  font-size: 10px;
+  display: none !important;
 }
 
 
@@ -613,7 +735,9 @@ body {
 .shuffle-btn.v3-shuffle {
   position: absolute;
   left: 50%;
-  bottom: 36px;
+  /* 距 pane 底随 viewport 高度缩放；配合 pane-inner padding-bottom 公式，
+     卡片↔shuffle 的间距永远 = --v3-gap */
+  bottom: var(--v3-shuffle-bottom);
   transform: translateX(-50%) !important;
   overflow: hidden;
   width: calc(100% - 32px);
@@ -780,18 +904,9 @@ body {
   box-shadow: 0 0 8px var(--v3-color), 0 0 14px var(--v3-color);
   animation: v3pulse 1.4s ease-in-out infinite;
 }
+/* 底部 tab 的 01/02/03/04 序号 —— 按需求不显示 */
 .v3-tab__num {
-  font-family: var(--v3-font-mono);
-  font-size: 8px;
-  font-weight: 600;
-  letter-spacing: 0.3em;
-  margin-top: 2px;
-  color: #333;
-  line-height: 1;
-  transition: color 200ms ease;
-}
-.tab-item.v3-tab.is-active .v3-tab__num {
-  color: color-mix(in oklab, var(--v3-color) 80%, transparent);
+  display: none !important;
 }
 
 
@@ -869,20 +984,25 @@ body:not([data-tab]) .submit-app { --v3-color: var(--v3-grab); }
   gap: 22px;
 }
 
-/* Section label：用 mono eyebrow 风格 */
+/* Section label：中文主体用数黑体大字号，前缀 "// " 保留 mono eyebrow 氛围 */
 .form-label {
-  font-family: var(--v3-font-mono) !important;
-  font-weight: 600 !important;
-  font-size: 10px !important;
-  letter-spacing: 0.3em !important;
-  text-transform: uppercase;
-  color: var(--v3-color) !important;
+  font-family: var(--v3-font-cn) !important;
+  font-weight: 900 !important;
+  font-size: 16px !important;
+  letter-spacing: 0.08em !important;
+  text-transform: none;
+  color: var(--v3-ink) !important;
+  line-height: 1.25;
 }
 .form-label::before {
   content: "// ";
-  color: var(--v3-muted);
-  font-weight: 400;
-  letter-spacing: 0;
+  font-family: var(--v3-font-mono);
+  color: var(--v3-color);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  vertical-align: 1px;
+  margin-right: 4px;
 }
 
 .form-hint {
@@ -963,8 +1083,11 @@ body:not([data-tab]) .submit-app { --v3-color: var(--v3-grab); }
 .form-textarea::placeholder,
 .form-input::placeholder {
   color: var(--v3-muted) !important;
-  opacity: 0.9;
+  opacity: 0.85;
   font-family: var(--v3-font-cn);
+  /* 占位符比输入态字号小一圈，避免抢视线 */
+  font-size: 12.5px !important;
+  letter-spacing: 0.02em;
 }
 .form-textarea:focus,
 .form-input:focus {
@@ -1116,5 +1239,117 @@ body:not([data-tab]) .submit-app { --v3-color: var(--v3-grab); }
   .v3-hero::before,
   .v3-hero::after {
     font-size: 128px;
+  }
+}
+
+
+/* ======================================================================
+   13. 上高速"气候外溢层" + 模式切换冲击波
+   —— 仅在 body[data-mode="highway"] 时生效（即当前 tab 是 truth/dare
+      且 state.modes 为 highway）。不改模式条结构，不改独立色。
+   ====================================================================== */
+
+/* 13.1 外溢层：整屏红色 vignette + 顶底轻描边扫光 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  background:
+    radial-gradient(ellipse at 50% 42%,
+      transparent 52%,
+      color-mix(in oklab, var(--v3-dare) 18%, transparent) 100%),
+    linear-gradient(to bottom,
+      color-mix(in oklab, var(--v3-dare) 12%, transparent) 0%,
+      transparent 18%,
+      transparent 82%,
+      color-mix(in oklab, var(--v3-dare) 12%, transparent) 100%);
+  opacity: 0;
+  transition: opacity 520ms cubic-bezier(0.22, 0.7, 0.3, 1);
+  mix-blend-mode: screen;
+}
+
+body[data-mode="highway"]::before {
+  opacity: 1;
+}
+
+/* 13.2 卡片在外溢层下增加一层红晕（叠加，不替换原阴影） */
+.ticket {
+  transition:
+    filter 420ms cubic-bezier(0.22, 0.7, 0.3, 1),
+    box-shadow 420ms cubic-bezier(0.22, 0.7, 0.3, 1);
+}
+body[data-mode="highway"] .ticket {
+  filter: drop-shadow(0 0 14px color-mix(in oklab, var(--v3-dare) 40%, transparent));
+}
+
+/* 13.3 Hero 大字在外溢层下透出一丝余温 */
+.v3-hero { transition: filter 420ms ease-out; }
+body[data-mode="highway"] .v3-hero {
+  filter: drop-shadow(0 0 18px color-mix(in oklab, var(--v3-dare) 32%, transparent));
+}
+
+/* 13.4 shuffle 按钮在高速模式下扫光更快 */
+body[data-mode="highway"] .shuffle-btn.v3-shuffle::before {
+  animation-duration: 1.6s !important;
+}
+
+/* 13.5 切换瞬间：从模式条中心扩散的冲击波环 */
+.v3-shockwave {
+  position: fixed;
+  width: 48px;
+  height: 48px;
+  margin-left: -24px;
+  margin-top: -24px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10000;
+  opacity: 0;
+  transform: scale(0.18);
+  will-change: transform, opacity;
+  animation: v3-shockwave-burst 620ms cubic-bezier(0.16, 0.68, 0.3, 1) forwards;
+}
+
+.v3-shockwave--highway {
+  border: 3px solid var(--v3-dare);
+  box-shadow:
+    0 0 24px var(--v3-dare),
+    0 0 48px color-mix(in oklab, var(--v3-dare) 60%, transparent),
+    inset 0 0 14px var(--v3-dare);
+}
+
+.v3-shockwave--safe {
+  border: 2px solid #4FD6A1;
+  box-shadow:
+    0 0 16px #4FD6A1,
+    inset 0 0 10px #4FD6A1;
+  animation-duration: 520ms;
+  animation-timing-function: cubic-bezier(0.2, 0.6, 0.4, 1);
+}
+
+@keyframes v3-shockwave-burst {
+  0% {
+    transform: scale(0.18);
+    opacity: 0.9;
+    border-width: 4px;
+  }
+  45% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(14);
+    opacity: 0;
+    border-width: 1px;
+  }
+}
+
+/* 13.6 无障碍：降级动画 */
+@media (prefers-reduced-motion: reduce) {
+  body::before { transition: none; }
+  .ticket, .v3-hero { transition: none; }
+  .v3-shockwave { display: none; }
+  body[data-mode="highway"] .shuffle-btn.v3-shuffle::before {
+    animation: none !important;
   }
 }

@@ -137,31 +137,31 @@
     'grab-finger': {
       title: 'GRAB · 抓手指',
       tag: 'FINGER',
-      stampText: '干杯<br/>CHEERS',
+      stampText: 'CHEERS',
       themeClass: '',
     },
     'truth-kindergarten': {
       title: 'TRUTH · 真心话',
       tag: 'KINDER',
-      stampText: '幼儿园<br/>SAFE',
+      stampText: 'SAFE',
       themeClass: '',
     },
     'truth-highway': {
       title: 'TRUTH · 真心话',
       tag: 'HIGHWAY',
-      stampText: '上高速<br/>WILD',
+      stampText: 'WILD',
       themeClass: 'is-blood',
     },
     'dare-kindergarten': {
       title: 'DARE · 大冒险',
       tag: 'KINDER',
-      stampText: '幼儿园<br/>SAFE',
+      stampText: 'SAFE',
       themeClass: '',
     },
     'dare-highway': {
       title: 'DARE · 大冒险',
       tag: 'HIGHWAY',
-      stampText: '上高速<br/>WILD',
+      stampText: 'WILD',
       themeClass: 'is-fire',
     },
     'other-games': {
@@ -370,6 +370,7 @@
 
       // v2 redesign：同步 body data-tab，让 CSS 变量 --v3-color 跟随主色
       document.body.dataset.tab = tabKey;
+      syncModeOverlay();
 
       const stage = $(`.card-stage[data-stage="${tabKey}"]`);
       if (stage && !stage.firstElementChild) {
@@ -397,6 +398,8 @@
           side.classList.toggle('is-active', side.dataset.modeTarget === target);
         });
         renderStage(stageKey, { animateOut: true });
+        syncModeOverlay();
+        triggerModeShockwave(switcher, target);
       }
 
       let startX = 0;
@@ -617,6 +620,7 @@
     });
     // v2 redesign：同步 body data-tab
     document.body.dataset.tab = tabKey;
+    syncModeOverlay();
   }
 
   function handleFromSubmit() {
@@ -660,6 +664,39 @@
     window.history.replaceState({}, '', window.location.pathname);
   }
 
+  /* ---------- v2 redesign：上高速气候外溢层 + 模式切换冲击波 ---------- */
+  function syncModeOverlay() {
+    const t = state.activeTab;
+    const m = state.modes && state.modes[t];
+    if ((t === 'truth' || t === 'dare') && m === 'highway') {
+      document.body.dataset.mode = 'highway';
+    } else {
+      delete document.body.dataset.mode;
+    }
+  }
+
+  function triggerModeShockwave(switcher, target) {
+    if (!switcher) return;
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) return;
+
+    const rect = switcher.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+
+    const wave = document.createElement('div');
+    wave.className = 'v3-shockwave' + (target === 'highway' ? ' v3-shockwave--highway' : ' v3-shockwave--safe');
+    wave.style.left = cx + 'px';
+    wave.style.top = cy + 'px';
+    document.body.appendChild(wave);
+
+    if (target === 'highway' && navigator.vibrate) {
+      try { navigator.vibrate(12); } catch (_) {}
+    }
+
+    setTimeout(() => wave.remove(), 720);
+  }
+
   /* ---------- 品牌文字：根据当天星期几更新 ---------- */
   function setBrandWeekday() {
     const days = ['天', '一', '二', '三', '四', '五', '六'];
@@ -676,6 +713,7 @@
 
     // v2 redesign：初始化 body data-tab，保证 CSS 主色变量就位
     document.body.dataset.tab = state.activeTab;
+    syncModeOverlay();
 
     const ok = await loadData();
     if (!ok) return;
