@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#1A0E14" />
+  <meta name="theme-color" content="#050505" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>疯狂星期X · CRAZY NIGHT</title>
@@ -15,6 +15,10 @@
     href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
     rel="stylesheet"
   />
+  <!-- v2 redesign 字体：Archivo Black 西文展示 + JetBrains Mono 等宽（已在上方加载） -->
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap" rel="stylesheet" />
+  <!-- v2 redesign 中文展示字：阿里妈妈数黑体 Bold -->
+  <link href="https://cdn.jsdelivr.net/npm/cn-fontsource-alimama-shu-hei-ti-bold/font.css" rel="stylesheet" />
 
   <!-- 中文标题字体：得意黑 Smiley Sans Oblique（阿里开源，自带 3.5° 倾斜） -->
   <style>
@@ -28,10 +32,12 @@
   </style>
 
   <link rel="stylesheet" href="./style.css" />
+  <!-- v2 redesign 皮肤（独立文件，覆盖 v1 视觉） -->
+  <link rel="stylesheet" href="./style-redesign.css" />
 </head>
 
-<body>
-  <!-- 背景层：深酒红颗粒渐变 + SVG 噪点纹理 -->
+<body data-tab="grab-finger">
+  <!-- 背景层：v1 保留（v2 皮肤中隐藏）深酒红颗粒渐变 + SVG 噪点纹理 -->
   <div class="bg-layer" aria-hidden="true">
     <div class="bg-gradient"></div>
     <div class="bg-noise"></div>
@@ -41,16 +47,16 @@
   <div id="app" class="app">
 
     <!-- ========== 顶部标题栏 ========== -->
-    <header class="app-header">
+    <header class="app-header v3-header">
       <div class="brand">
-        <span class="brand-mark">疯</span>
+        <span class="brand-mark v3-logo">疯</span>
         <div class="brand-text">
-          <span class="brand-cn" id="brandCnText">疯狂星期天</span>
-          <span class="brand-en">DRINKING GAMES</span>
+          <span class="brand-cn v3-title-zh" id="brandCnText">疯狂星期天</span>
+          <span class="brand-en v3-title-en">DRINKING GAMES</span>
         </div>
       </div>
       <div class="header-actions">
-        <a class="header-add-btn" href="./submit.html" aria-label="加一张卡">
+        <a class="header-add-btn v3-add-btn" href="./submit.html" aria-label="加一张卡">
           <span class="add-btn-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -68,6 +74,7 @@
       <!-- Tab 1：抓手指 -->
       <section class="tab-pane is-active" data-pane="grab-finger">
         <div class="pane-inner">
+          <div class="v3-hero" data-text="GRAB" aria-hidden="true"></div>
           <div class="card-stage" data-stage="grab-finger">
             <!-- 票根卡片由 JS 渲染 -->
           </div>
@@ -76,7 +83,7 @@
             <span>SWIPE</span>
             <span class="arrow">›</span>
           </div>
-          <button class="shuffle-btn" data-shuffle="grab-finger" type="button">
+          <button class="shuffle-btn v3-shuffle" data-shuffle="grab-finger" type="button">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="16 3 21 3 21 8"></polyline>
               <line x1="4" y1="20" x2="21" y2="3"></line>
@@ -92,21 +99,22 @@
       <!-- Tab 2：真心话 -->
       <section class="tab-pane" data-pane="truth">
         <div class="pane-inner">
+          <div class="v3-hero" data-text="TRUTH" aria-hidden="true"></div>
           <!-- 模式切换器 -->
-          <div class="mode-switcher" data-mode-switcher="truth" data-mode="kindergarten">
-            <button class="mode-side mode-side-left is-active" data-mode-target="kindergarten" type="button">
+          <div class="mode-switcher v3-mode" data-mode-switcher="truth" data-mode="kindergarten">
+            <button class="mode-side mode-side-left v3-mode__btn v3-mode__btn--kindergarten is-active" data-mode-target="kindergarten" type="button">
               <span class="mode-emoji">🚌</span>
               <span class="mode-label">幼儿园</span>
             </button>
-            <div class="mode-track">
-              <div class="mode-road">
+            <div class="mode-track v3-mode__track">
+              <div class="mode-road v3-mode__dashes">
                 <span class="road-dash"></span>
                 <span class="road-dash"></span>
                 <span class="road-dash"></span>
                 <span class="road-dash"></span>
                 <span class="road-dash"></span>
               </div>
-              <div class="mode-vehicle">
+              <div class="mode-vehicle v3-mode__bus">
                 <!-- 校车 SVG -->
                 <svg class="vehicle-bus" viewBox="0 0 64 36" width="56" height="32" aria-hidden="true">
                   <rect x="2" y="6" width="50" height="22" rx="4" fill="#E8A33D" />
@@ -123,7 +131,7 @@
                 </svg>
               </div>
             </div>
-            <button class="mode-side mode-side-right" data-mode-target="highway" type="button">
+            <button class="mode-side mode-side-right v3-mode__btn v3-mode__btn--highway" data-mode-target="highway" type="button">
               <span class="mode-emoji">🏁</span>
               <span class="mode-label">上高速</span>
             </button>
@@ -137,7 +145,7 @@
             <span>SWIPE</span>
             <span class="arrow">›</span>
           </div>
-          <button class="shuffle-btn" data-shuffle="truth" type="button">
+          <button class="shuffle-btn v3-shuffle" data-shuffle="truth" type="button">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="16 3 21 3 21 8"></polyline>
               <line x1="4" y1="20" x2="21" y2="3"></line>
@@ -153,20 +161,21 @@
       <!-- Tab 3：大冒险 -->
       <section class="tab-pane" data-pane="dare">
         <div class="pane-inner">
-          <div class="mode-switcher" data-mode-switcher="dare" data-mode="kindergarten">
-            <button class="mode-side mode-side-left is-active" data-mode-target="kindergarten" type="button">
+          <div class="v3-hero" data-text="DARE" aria-hidden="true"></div>
+          <div class="mode-switcher v3-mode" data-mode-switcher="dare" data-mode="kindergarten">
+            <button class="mode-side mode-side-left v3-mode__btn v3-mode__btn--kindergarten is-active" data-mode-target="kindergarten" type="button">
               <span class="mode-emoji">🚌</span>
               <span class="mode-label">幼儿园</span>
             </button>
-            <div class="mode-track">
-              <div class="mode-road">
+            <div class="mode-track v3-mode__track">
+              <div class="mode-road v3-mode__dashes">
                 <span class="road-dash"></span>
                 <span class="road-dash"></span>
                 <span class="road-dash"></span>
                 <span class="road-dash"></span>
                 <span class="road-dash"></span>
               </div>
-              <div class="mode-vehicle">
+              <div class="mode-vehicle v3-mode__bus">
                 <svg class="vehicle-bus" viewBox="0 0 64 36" width="56" height="32" aria-hidden="true">
                   <rect x="2" y="6" width="50" height="22" rx="4" fill="#E8A33D" />
                   <rect x="2" y="6" width="50" height="6" rx="3" fill="#C8861E" />
@@ -182,7 +191,7 @@
                 </svg>
               </div>
             </div>
-            <button class="mode-side mode-side-right" data-mode-target="highway" type="button">
+            <button class="mode-side mode-side-right v3-mode__btn v3-mode__btn--highway" data-mode-target="highway" type="button">
               <span class="mode-emoji">🏁</span>
               <span class="mode-label">上高速</span>
             </button>
@@ -196,7 +205,7 @@
             <span>SWIPE</span>
             <span class="arrow">›</span>
           </div>
-          <button class="shuffle-btn" data-shuffle="dare" type="button">
+          <button class="shuffle-btn v3-shuffle" data-shuffle="dare" type="button">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="16 3 21 3 21 8"></polyline>
               <line x1="4" y1="20" x2="21" y2="3"></line>
@@ -212,6 +221,7 @@
       <!-- Tab 4：其他游戏 -->
       <section class="tab-pane" data-pane="other-games">
         <div class="pane-inner">
+          <div class="v3-hero" data-text="EXTRA" aria-hidden="true"></div>
           <div class="card-stage" data-stage="other-games">
             <!-- 票根卡片（卷轴样式）由 JS 渲染 -->
           </div>
@@ -220,7 +230,7 @@
             <span>SWIPE</span>
             <span class="arrow">›</span>
           </div>
-          <button class="shuffle-btn" data-shuffle="other-games" type="button">
+          <button class="shuffle-btn v3-shuffle" data-shuffle="other-games" type="button">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="16 3 21 3 21 8"></polyline>
               <line x1="4" y1="20" x2="21" y2="3"></line>
@@ -236,8 +246,8 @@
     </main>
 
     <!-- ========== 底部 Tab 导航 ========== -->
-    <nav class="tab-bar" role="tablist">
-      <button class="tab-item is-active" data-tab="grab-finger" role="tab" aria-selected="true" type="button">
+    <nav class="tab-bar v3-tabbar" role="tablist">
+      <button class="tab-item v3-tab is-active" data-tab="grab-finger" role="tab" aria-selected="true" type="button">
         <span class="tab-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 11V6a2 2 0 0 1 4 0v5"></path>
@@ -246,30 +256,36 @@
           </svg>
         </span>
         <span class="tab-label">抓手指</span>
+        <span class="v3-tab__label"><span class="v3-tab__dot"></span>抓手指</span>
+        <span class="v3-tab__num">01</span>
         <span class="tab-indicator" aria-hidden="true"></span>
       </button>
 
-      <button class="tab-item" data-tab="truth" role="tab" aria-selected="false" type="button">
+      <button class="tab-item v3-tab" data-tab="truth" role="tab" aria-selected="false" type="button">
         <span class="tab-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
           </svg>
         </span>
         <span class="tab-label">真心话</span>
+        <span class="v3-tab__label"><span class="v3-tab__dot"></span>真心话</span>
+        <span class="v3-tab__num">02</span>
         <span class="tab-indicator" aria-hidden="true"></span>
       </button>
 
-      <button class="tab-item" data-tab="dare" role="tab" aria-selected="false" type="button">
+      <button class="tab-item v3-tab" data-tab="dare" role="tab" aria-selected="false" type="button">
         <span class="tab-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
           </svg>
         </span>
         <span class="tab-label">大冒险</span>
+        <span class="v3-tab__label"><span class="v3-tab__dot"></span>大冒险</span>
+        <span class="v3-tab__num">03</span>
         <span class="tab-indicator" aria-hidden="true"></span>
       </button>
 
-      <button class="tab-item" data-tab="other-games" role="tab" aria-selected="false" type="button">
+      <button class="tab-item v3-tab" data-tab="other-games" role="tab" aria-selected="false" type="button">
         <span class="tab-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="18" height="18" rx="3"></rect>
@@ -281,6 +297,8 @@
           </svg>
         </span>
         <span class="tab-label">玩点别的</span>
+        <span class="v3-tab__label"><span class="v3-tab__dot"></span>玩点别的</span>
+        <span class="v3-tab__num">04</span>
         <span class="tab-indicator" aria-hidden="true"></span>
       </button>
     </nav>

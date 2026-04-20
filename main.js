@@ -368,6 +368,9 @@
         p.classList.toggle('is-active', p.dataset.pane === tabKey);
       });
 
+      // v2 redesign：同步 body data-tab，让 CSS 变量 --v3-color 跟随主色
+      document.body.dataset.tab = tabKey;
+
       const stage = $(`.card-stage[data-stage="${tabKey}"]`);
       if (stage && !stage.firstElementChild) {
         renderStage(tabKey);
@@ -612,6 +615,8 @@
     $$('.tab-pane').forEach(p => {
       p.classList.toggle('is-active', p.dataset.pane === tabKey);
     });
+    // v2 redesign：同步 body data-tab
+    document.body.dataset.tab = tabKey;
   }
 
   function handleFromSubmit() {
@@ -668,6 +673,9 @@
   /* ---------- 初始化 ---------- */
   async function init() {
     setBrandWeekday();
+
+    // v2 redesign：初始化 body data-tab，保证 CSS 主色变量就位
+    document.body.dataset.tab = state.activeTab;
 
     const ok = await loadData();
     if (!ok) return;
