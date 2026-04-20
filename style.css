@@ -89,9 +89,9 @@
   /* 真心话 / 大冒险 / 抓手指：模式条或与之对齐的统一顶距（抓手指无模式条，用同值与后两者垂直对齐） */
   --card-stage-top-offset: clamp(114px, 10.5dvh + 58px, 154px);
   /* 玩点别的：无模式条，顶距小于上一项，避免贴标题行，并与「换一张」侧留白大致对称；不压掉过多可阅读高度 */
-  --card-stage-top-offset-other: clamp(56px, 7dvh + 32px, 100px);
-  /* 玩点别的 kraft：在 stage 内 max-height 再收一截，卡片略短、上下更匀 */
-  --other-games-ticket-h-inset: clamp(18px, 3.5dvh, 34px);
+  --card-stage-top-offset-other: clamp(44px, 6dvh + 24px, 86px);
+  /* 玩点别的 kraft：在 stage 内 max-height 再收一截；inset 变小 = 卡片更高，能装下更多规则 */
+  --other-games-ticket-h-inset: clamp(6px, 1.5dvh, 18px);
   /* 玩点别的：可滚动时底部渐变蒙层高度（末行半隐提示） */
   --kraft-scroll-fade-h: clamp(36px, 9dvh, 52px);
 
@@ -1072,6 +1072,48 @@ button {
   min-height: 0;
 }
 
+/* ---------- 9.5 非 kraft 票根：正文相对「可见卡片正文区」真正居中 ----------
+   几何推导：
+   · 虚线 perforation 永远位于 ticket bottom: 40px。
+   · 「可见正文区」= 票根顶边 → 虚线，中心 y = (ticket_h - 40) / 2。
+   · body 内容中心 y = ticket.padding-top + (ticket_h - ticket.padding-bottom - ticket.padding-top) / 2
+                      = (ticket.padding-top + ticket_h - ticket.padding-bottom) / 2。
+   · 令 body 内容中心 ≡ 正文区中心：
+       ticket.padding-bottom = ticket.padding-top + 40。
+   → 默认 top=28 → bot=68；小屏 top=22 → bot=62。
+   配合 body 的 justify-content:center（把内容组居中）与标题绝对定位（不参与居中）
+   —— 文字几何中心锁在正文区中心，短长文都不再偏位。 */
+.ticket:not(.is-kraft) {
+  /* 覆盖 .ticket 基础的 calc(var(--stamp-size) + 31px)。虚线在 bottom:40px，
+     68 比 40 大 → 正文永远不会压到虚线；68 比 stub 顶距 (stamp + 13 ≈ 69~93) 略小，
+     仅在票根右侧印章所在水平带内几何「进入」一点点，而文本为左对齐，不会与印章相撞。 */
+  padding-bottom: 68px;
+}
+
+.ticket:not(.is-kraft) .ticket-body {
+  /* 居中子项组（title 被绝对定位后，唯一的流内子项是 .ticket-content） */
+  justify-content: center;
+  padding-bottom: 0;
+  /* 给绝对定位的 title 做锚点 */
+  position: relative;
+  /* 原 body 的 min-height 与 flex:1 保持：短内容时 body 仍被 ticket 撑满，居中效果稳定 */
+}
+
+.ticket:not(.is-kraft) .ticket-title {
+  /* 标题钉在 body 顶部，不占据 flex 轨道，从而不影响 .ticket-content 的垂直居中 */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin-bottom: 0;
+}
+
+.ticket:not(.is-kraft) .ticket-content {
+  /* 去掉 flex-grow，让内容保持「文本自然高度」，交由父级 justify-content:center 做真居中 */
+  flex: 0 1 auto;
+  margin-top: 0;
+}
+
 /* ---------- 10. 票根入场 / 退场动画 ---------- */
 .ticket.enter {
   animation: ticket-enter 520ms var(--ease-spring);
@@ -1336,13 +1378,17 @@ button {
 @media (max-height: 700px) {
   :root {
     --card-stage-top-offset: clamp(98px, 9dvh + 46px, 128px);
-    --card-stage-top-offset-other: clamp(44px, 6dvh + 24px, 80px);
-    --other-games-ticket-h-inset: clamp(14px, 3dvh, 26px);
+    --card-stage-top-offset-other: clamp(36px, 5dvh + 20px, 68px);
+    --other-games-ticket-h-inset: clamp(4px, 1.2dvh, 14px);
     --kraft-scroll-fade-h: clamp(28px, 7dvh, 40px);
   }
   .ticket {
     /* 小屏同样为 stub 区域留 padding-bottom，公式同主版 */
     padding: 22px 22px calc(var(--stamp-size) + 24px);
+  }
+  .ticket:not(.is-kraft) {
+    /* 小屏居中公式：top=22 → bottom=22+40=62，保持正文中心 ≡ 正文区中心 */
+    padding: 22px 22px 62px;
   }
   .ticket.is-kraft {
     /* 玩点别的：小屏继续用更紧的底边距，与其它 tab 的通用小屏 padding 区分开 */
