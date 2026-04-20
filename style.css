@@ -131,6 +131,10 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* iOS Safari：禁用正文自动放大，否则长段落会被 Text Autosizer 抬字号，
+     出现「字数越多看起来越大、短句反而更小」与 .size-fallback 设计相反。 */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 button {
